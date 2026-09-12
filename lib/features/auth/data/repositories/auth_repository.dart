@@ -6,7 +6,11 @@ class AuthRepository {
 
   static const String passwordRecoveryRedirect = 'hadi-sms://reset-password';
 
-  Future<AuthResponse> login(String email, String password) async {
+  Future<AuthResponse> login(
+    String email,
+    String password, {
+    String? expectedRole,
+  }) async {
     final response = await client.auth.signInWithPassword(
       email: email.trim().toLowerCase(),
       password: password,
@@ -17,7 +21,6 @@ class AuthRepository {
       throw const AuthException('Authentication failed.');
     }
 
-    // Repair an orphaned profile when a school owned by this user already exists.
     await client.rpc('ensure_my_school_link');
 
     final profile = await client
@@ -39,7 +42,16 @@ class AuthRepository {
 
     if (profile['school_id'] == null) {
       await client.auth.signOut();
-      throw const AuthException('Your account is not linked to a school. Please complete school registration first.');
+      throw const AuthException('Your account is not linked to a school. Please contact the school administrator.');
+    }
+
+    final actualRole = profile['role']?.toString().trim().toLowerCase();
+    final requiredRole = expectedRole?.trim().toLowerCase();
+
+    if (requiredRole != null && requiredRole.isNotEmpty && actualRole != requiredRole) {
+      await client.auth.signOut();
+      final portalName = requiredRole == 'parent' ? 'Parent' : 'Teacher';
+      throw AuthException('This account is not a $portalName account. Please use the correct portal.');
     }
 
     return response;
