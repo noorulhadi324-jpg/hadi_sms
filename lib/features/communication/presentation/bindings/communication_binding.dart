@@ -1,9 +1,6 @@
-import '../controllers/communication_controller.dart';
-
-/// Central place for communication dependencies.
-/// Riverpod providers are lazily created, so no manual initialization is needed.
+/// Communication dependencies are provided through Riverpod.
+/// This binding class intentionally stays lightweight because Riverpod
+/// initializes providers lazily when the screen needs them.
 class CommunicationBinding {
   const CommunicationBinding();
-
-  static const providers = [communicationRepositoryProvider, communicationSchoolUsersProvider];
 }
