@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/main_wrapper.dart';
 import 'system_settings_screen.dart';
 
 class SettingsHubScreen extends StatelessWidget {
@@ -9,9 +10,8 @@ class SettingsHubScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings'), centerTitle: false),
-      body: LayoutBuilder(builder: (context, constraints) {
+    return MainWrapper(
+      child: LayoutBuilder(builder: (context, constraints) {
         final mobile = constraints.maxWidth < 700;
         return ListView(
           padding: EdgeInsets.all(mobile ? 16 : 28),
