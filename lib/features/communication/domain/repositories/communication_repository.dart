@@ -1,4 +1,5 @@
 import '../../data/models/notification_model.dart';
+import '../entities/communication_thread.dart';
 
 abstract class CommunicationRepository {
   Future<List<NotificationModel>> getSchoolNotifications(int schoolId);
@@ -28,5 +29,22 @@ abstract class CommunicationRepository {
   Future<void> deleteNotification({
     required int id,
     required int schoolId,
+  });
+
+  Future<List<Map<String, dynamic>>> getSchoolUsers(int schoolId);
+  Future<List<CommunicationThread>> getThreads(int schoolId);
+
+  Future<int> createThread({
+    required int schoolId,
+    required String createdBy,
+    String? title,
+    required String threadType,
+    required List<String> memberIds,
+  });
+
+  Future<void> sendMessage({
+    required int threadId,
+    required String senderId,
+    required String body,
   });
 }
