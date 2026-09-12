@@ -32,6 +32,7 @@ import '../../features/payroll/presentation/screens/payroll_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/result/presentation/screens/result_screen.dart';
+import '../../features/result/presentation/screens/grader_screen.dart';
 import '../../features/settings/presentation/screens/settings_hub_screen.dart';
 import '../../features/staff/presentation/screens/staff_screen.dart';
 import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
@@ -83,6 +84,7 @@ class AppRouter {
       GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
       GoRoute(path: '/reports', builder: (_, __) => const ReportsScreen()),
       GoRoute(path: '/result', builder: (_, __) => const ResultsScreen()),
+      GoRoute(path: '/grader', builder: (_, __) => const GraderScreen()),
       GoRoute(path: '/settings', builder: (_, __) => const SettingsHubScreen()),
       GoRoute(path: '/staff', builder: (_, __) => const StaffScreen()),
       GoRoute(path: '/transport', builder: (_, __) => const TransportScreen()),
