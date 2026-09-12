@@ -19,7 +19,6 @@ class _AcademicScreenState extends State<AcademicScreen> {
 
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _sessions = [];
-  int? _schoolId;
 
   @override
   void initState() {
@@ -68,7 +67,6 @@ class _AcademicScreenState extends State<AcademicScreen> {
 
       if (!mounted) return;
       setState(() {
-        _schoolId = schoolId;
         _classes = List<Map<String, dynamic>>.from(results[0] as List);
         _sessions = List<Map<String, dynamic>>.from(results[1] as List);
         _loading = false;
@@ -94,7 +92,11 @@ class _AcademicScreenState extends State<AcademicScreen> {
             const SizedBox(height: 24),
             _buildActiveSession(context),
             const SizedBox(height: 32),
-            _buildSectionHeader(context, 'School Hierarchy', 'Manage your classes and sections.'),
+            _buildSectionHeader(
+              context,
+              'School Hierarchy',
+              'Manage your classes and sections.',
+            ),
             const SizedBox(height: 16),
             _buildClassGrid(context),
           ],
@@ -201,10 +203,11 @@ class _AcademicScreenState extends State<AcademicScreen> {
                     ],
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Manage Sessions'),
-                ),
+                if (!compact)
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text('Manage Sessions'),
+                  ),
               ],
             );
 
