@@ -9,6 +9,7 @@ class AuthGuard {
     final location = state.uri.path;
     final auth = AuthStateNotifier.instance;
     const publicRoutes = {
+      '/session-router',
       '/login',
       '/teacher-login',
       '/parent-login',
@@ -24,7 +25,7 @@ class AuthGuard {
       return auth.session == null ? '/login' : null;
     }
 
-    if (location == '/splash') return null;
+    if (location == '/splash' || location == '/session-router') return null;
 
     if (auth.session == null && !publicRoutes.contains(location)) {
       return '/login';
@@ -35,9 +36,8 @@ class AuthGuard {
     final isLoginRoute = publicRoutes.contains(location);
     if (isLoginRoute) {
       if (location == '/teacher-login' || location == '/parent-login') {
-        // Keep role-specific login pages reachable after a logout. For an active
-        // session, route based on the actual profile instead.
-      } else {
+        // Role-specific login pages remain available after logout.
+      } else if (location != '/session-router') {
         return await _portalForCurrentUser();
       }
     }
