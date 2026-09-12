@@ -25,6 +25,7 @@ import '../../features/inventory/presentation/screens/inventory_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/notification/presentation/screens/notification_screen.dart';
 import '../../features/parent/presentation/screens/parent_screen.dart';
+import '../../features/parent/presentation/screens/parent_dashboard_screen.dart';
 import '../../features/payroll/presentation/screens/payroll_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
@@ -51,6 +52,7 @@ class AppRouter {
       GoRoute(path: '/reset-password', builder: (_, __) => const ResetPasswordScreen()),
       GoRoute(path: '/register-school', builder: (_, __) => const SchoolRegistrationScreen()),
       GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+      GoRoute(path: '/parent-dashboard', builder: (_, __) => const ParentDashboardScreen()),
       GoRoute(path: '/academic', builder: (_, __) => const AcademicScreen()),
       GoRoute(path: '/student', builder: (_, __) => const ClassesScreen()),
       GoRoute(path: '/teacher', builder: (_, __) => const TeacherScreen()),
