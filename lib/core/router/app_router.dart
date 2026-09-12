@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/splash/presentation/screens/session_router_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -33,6 +32,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/result/presentation/screens/result_screen.dart';
 import '../../features/result/presentation/screens/grader_screen.dart';
+import '../../features/result/presentation/screens/result_card_screen.dart';
 import '../../features/settings/presentation/screens/settings_hub_screen.dart';
 import '../../features/staff/presentation/screens/staff_screen.dart';
 import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
@@ -42,52 +42,6 @@ import '../auth/auth_state_notifier.dart';
 
 class AppRouter {
   AppRouter._();
-
-  static final router = GoRouter(
-    initialLocation: '/session-router',
-    refreshListenable: AuthStateNotifier.instance,
-    redirect: (BuildContext context, GoRouterState state) => AuthGuard.redirect(state),
-    routes: [
-      GoRoute(path: '/session-router', builder: (_, __) => const SessionRouterScreen()),
-      GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/teacher-login', builder: (_, __) => const LoginScreen(expectedRole: 'teacher')),
-      GoRoute(path: '/parent-login', builder: (_, __) => const LoginScreen(expectedRole: 'parent')),
-      GoRoute(path: '/staff-login', builder: (_, __) => const LoginScreen(expectedRole: 'staff')),
-      GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
-      GoRoute(path: '/reset-password', builder: (_, __) => const ResetPasswordScreen()),
-      GoRoute(path: '/register-school', builder: (_, __) => const SchoolRegistrationScreen()),
-      GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
-      GoRoute(path: '/teacher-dashboard', builder: (_, __) => const TeacherDashboardScreen()),
-      GoRoute(path: '/parent-dashboard', builder: (_, __) => const ParentDashboardScreen()),
-      GoRoute(path: '/staff-dashboard', builder: (_, __) => const StaffDashboardScreen()),
-      GoRoute(path: '/academic', builder: (_, __) => const AcademicScreen()),
-      GoRoute(path: '/student', builder: (_, __) => const ClassesScreen()),
-      GoRoute(path: '/teacher', builder: (_, __) => const TeacherScreen()),
-      GoRoute(path: '/attendance', builder: (_, __) => const AttendanceScreen()),
-      GoRoute(path: '/finance', builder: (_, __) => const FinanceScreen()),
-      GoRoute(path: '/communication', builder: (_, __) => const CommunicationCenterScreen()),
-      GoRoute(path: '/academics', builder: (_, __) => const AcademicScreen()),
-      GoRoute(path: '/accounting', builder: (_, __) => const AccountingScreen()),
-      GoRoute(path: '/assignment', builder: (_, __) => const AssignmentsScreen()),
-      GoRoute(path: '/classroom', builder: (_, __) => const ClassroomsScreen()),
-      GoRoute(path: '/event', builder: (_, __) => const EventsScreen()),
-      GoRoute(path: '/examination', builder: (_, __) => const ExaminationsScreen()),
-      GoRoute(path: '/fee', builder: (_, __) => const FeesScreen()),
-      GoRoute(path: '/homework', builder: (_, __) => const HomeworkScreen()),
-      GoRoute(path: '/hostel', builder: (_, __) => const HostelScreen()),
-      GoRoute(path: '/inventory', builder: (_, __) => const InventoryScreen()),
-      GoRoute(path: '/library', builder: (_, __) => const LibraryScreen()),
-      GoRoute(path: '/notification', builder: (_, __) => const NotificationsScreen()),
-      GoRoute(path: '/parent', builder: (_, __) => const ParentsScreen()),
-      GoRoute(path: '/payroll', builder: (_, __) => const PayrollScreen()),
-      GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
-      GoRoute(path: '/reports', builder: (_, __) => const ReportsScreen()),
-      GoRoute(path: '/result', builder: (_, __) => const ResultsScreen()),
-      GoRoute(path: '/grader', builder: (_, __) => const GraderScreen()),
-      GoRoute(path: '/settings', builder: (_, __) => const SettingsHubScreen()),
-      GoRoute(path: '/staff', builder: (_, __) => const StaffScreen()),
-      GoRoute(path: '/transport', builder: (_, __) => const TransportScreen()),
-    ],
-  );
+  static final router=GoRouter(initialLocation:'/session-router',refreshListenable:AuthStateNotifier.instance,redirect:(context,state)=>AuthGuard.redirect(state),routes:[
+    GoRoute(path:'/session-router',builder:(_,__)=>const SessionRouterScreen()),GoRoute(path:'/splash',builder:(_,__)=>const SplashScreen()),GoRoute(path:'/login',builder:(_,__)=>const LoginScreen()),GoRoute(path:'/teacher-login',builder:(_,__)=>const LoginScreen(expectedRole:'teacher')),GoRoute(path:'/parent-login',builder:(_,__)=>const LoginScreen(expectedRole:'parent')),GoRoute(path:'/staff-login',builder:(_,__)=>const LoginScreen(expectedRole:'staff')),GoRoute(path:'/forgot-password',builder:(_,__)=>const ForgotPasswordScreen()),GoRoute(path:'/reset-password',builder:(_,__)=>const ResetPasswordScreen()),GoRoute(path:'/register-school',builder:(_,__)=>const SchoolRegistrationScreen()),GoRoute(path:'/dashboard',builder:(_,__)=>const DashboardScreen()),GoRoute(path:'/teacher-dashboard',builder:(_,__)=>const TeacherDashboardScreen()),GoRoute(path:'/parent-dashboard',builder:(_,__)=>const ParentDashboardScreen()),GoRoute(path:'/staff-dashboard',builder:(_,__)=>const StaffDashboardScreen()),GoRoute(path:'/academic',builder:(_,__)=>const AcademicScreen()),GoRoute(path:'/student',builder:(_,__)=>const ClassesScreen()),GoRoute(path:'/teacher',builder:(_,__)=>const TeacherScreen()),GoRoute(path:'/attendance',builder:(_,__)=>const AttendanceScreen()),GoRoute(path:'/finance',builder:(_,__)=>const FinanceScreen()),GoRoute(path:'/communication',builder:(_,__)=>const CommunicationCenterScreen()),GoRoute(path:'/academics',builder:(_,__)=>const AcademicScreen()),GoRoute(path:'/accounting',builder:(_,__)=>const AccountingScreen()),GoRoute(path:'/assignment',builder:(_,__)=>const AssignmentsScreen()),GoRoute(path:'/classroom',builder:(_,__)=>const ClassroomsScreen()),GoRoute(path:'/event',builder:(_,__)=>const EventsScreen()),GoRoute(path:'/examination',builder:(_,__)=>const ExaminationsScreen()),GoRoute(path:'/fee',builder:(_,__)=>const FeesScreen()),GoRoute(path:'/homework',builder:(_,__)=>const HomeworkScreen()),GoRoute(path:'/hostel',builder:(_,__)=>const HostelScreen()),GoRoute(path:'/inventory',builder:(_,__)=>const InventoryScreen()),GoRoute(path:'/library',builder:(_,__)=>const LibraryScreen()),GoRoute(path:'/notification',builder:(_,__)=>const NotificationsScreen()),GoRoute(path:'/parent',builder:(_,__)=>const ParentsScreen()),GoRoute(path:'/payroll',builder:(_,__)=>const PayrollScreen()),GoRoute(path:'/profile',builder:(_,__)=>const ProfileScreen()),GoRoute(path:'/reports',builder:(_,__)=>const ReportsScreen()),GoRoute(path:'/result',builder:(_,__)=>const ResultsScreen()),GoRoute(path:'/grader',builder:(_,__)=>const GraderScreen()),GoRoute(path:'/result-card',builder:(_,__)=>const ResultCardScreen()),GoRoute(path:'/settings',builder:(_,__)=>const SettingsHubScreen()),GoRoute(path:'/staff',builder:(_,__)=>const StaffScreen()),GoRoute(path:'/transport',builder:(_,__)=>const TransportScreen())]);
 }
