@@ -6,11 +6,43 @@ class AuthRepository {
 
   static const String passwordRecoveryRedirect = 'hadi-sms://reset-password';
 
-  Future<AuthResponse> login(String email, String password) {
-    return client.auth.signInWithPassword(
+  Future<AuthResponse> login(String email, String password) async {
+    final response = await client.auth.signInWithPassword(
       email: email.trim().toLowerCase(),
       password: password,
     );
+
+    final user = response.user;
+    if (user == null) {
+      throw const AuthException('Authentication failed.');
+    }
+
+    // Repair an orphaned profile when a school owned by this user already exists.
+    await client.rpc('ensure_my_school_link');
+
+    final profile = await client
+        .from('profiles')
+        .select('id, role, school_id, is_active')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    if (profile == null) {
+      await client.auth.signOut();
+      throw const AuthException('Your account profile was not found.');
+    }
+
+    final isActive = profile['is_active'];
+    if (isActive == false) {
+      await client.auth.signOut();
+      throw const AuthException('Your account is inactive. Please contact the administrator.');
+    }
+
+    if (profile['school_id'] == null) {
+      await client.auth.signOut();
+      throw const AuthException('Your account is not linked to a school. Please complete school registration first.');
+    }
+
+    return response;
   }
 
   Future<void> resetPassword(String email) {
