@@ -11,6 +11,7 @@ import '../../features/finance/presentation/screens/finance_screen.dart';
 import '../../features/communication/presentation/screens/communication_screen.dart';
 import '../../features/class/presentation/screens/class_screen.dart';
 import '../../features/teacher/presentation/screens/teacher_screen.dart';
+import '../../features/teacher/presentation/screens/teacher_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/academic/presentation/screens/academic_screen.dart';
 import '../../features/accounting/presentation/screens/accounting_screen.dart';
@@ -48,10 +49,13 @@ class AppRouter {
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/teacher-login', builder: (_, __) => const LoginScreen(expectedRole: 'teacher')),
+      GoRoute(path: '/parent-login', builder: (_, __) => const LoginScreen(expectedRole: 'parent')),
       GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/reset-password', builder: (_, __) => const ResetPasswordScreen()),
       GoRoute(path: '/register-school', builder: (_, __) => const SchoolRegistrationScreen()),
       GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+      GoRoute(path: '/teacher-dashboard', builder: (_, __) => const TeacherDashboardScreen()),
       GoRoute(path: '/parent-dashboard', builder: (_, __) => const ParentDashboardScreen()),
       GoRoute(path: '/academic', builder: (_, __) => const AcademicScreen()),
       GoRoute(path: '/student', builder: (_, __) => const ClassesScreen()),
