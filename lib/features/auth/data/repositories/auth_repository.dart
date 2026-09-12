@@ -17,9 +17,7 @@ class AuthRepository {
     );
 
     final user = response.user;
-    if (user == null) {
-      throw const AuthException('Authentication failed.');
-    }
+    if (user == null) throw const AuthException('Authentication failed.');
 
     await client.rpc('ensure_my_school_link');
 
@@ -33,13 +31,10 @@ class AuthRepository {
       await client.auth.signOut();
       throw const AuthException('Your account profile was not found.');
     }
-
-    final isActive = profile['is_active'];
-    if (isActive == false) {
+    if (profile['is_active'] == false) {
       await client.auth.signOut();
       throw const AuthException('Your account is inactive. Please contact the administrator.');
     }
-
     if (profile['school_id'] == null) {
       await client.auth.signOut();
       throw const AuthException('Your account is not linked to a school. Please contact the school administrator.');
@@ -47,10 +42,14 @@ class AuthRepository {
 
     final actualRole = profile['role']?.toString().trim().toLowerCase();
     final requiredRole = expectedRole?.trim().toLowerCase();
-
     if (requiredRole != null && requiredRole.isNotEmpty && actualRole != requiredRole) {
       await client.auth.signOut();
-      final portalName = requiredRole == 'parent' ? 'Parent' : 'Teacher';
+      final portalName = switch (requiredRole) {
+        'teacher' => 'Teacher',
+        'parent' => 'Parent',
+        'staff' => 'Staff',
+        _ => 'requested',
+      };
       throw AuthException('This account is not a $portalName account. Please use the correct portal.');
     }
 
