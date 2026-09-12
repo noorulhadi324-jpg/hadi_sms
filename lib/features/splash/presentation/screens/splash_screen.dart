@@ -14,13 +14,45 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 1500), _continue);
+    Timer(const Duration(milliseconds: 1200), _continue);
   }
 
-  void _continue() {
+  Future<void> _continue() async {
     if (!mounted) return;
-    final session = SupabaseConfig.client.auth.currentSession;
-    context.go(session == null ? '/login' : '/dashboard');
+    final client = SupabaseConfig.client;
+    final session = client.auth.currentSession;
+
+    if (session == null) {
+      context.go('/login');
+      return;
+    }
+
+    try {
+      await client.rpc('ensure_my_school_link');
+      final profile = await client
+          .from('profiles')
+          .select('role, school_id, is_active')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+      if (!mounted) return;
+
+      if (profile == null || profile['is_active'] == false || profile['school_id'] == null) {
+        await client.auth.signOut();
+        if (mounted) context.go('/login');
+        return;
+      }
+
+      final role = profile['role']?.toString().toLowerCase();
+      if (role == 'parent') {
+        context.go('/parent-dashboard');
+      } else {
+        context.go('/dashboard');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      context.go('/dashboard');
+    }
   }
 
   @override
@@ -40,15 +72,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 child: const Icon(Icons.school_rounded, size: 48, color: Colors.white),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'HADI SMS',
-                style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1),
-              ),
+              const Text('HADI SMS', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
               const SizedBox(height: 8),
-              Text(
-                'ENTERPRISE SCHOOL MANAGEMENT',
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2),
-              ),
+              Text('ENTERPRISE SCHOOL MANAGEMENT', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
               const SizedBox(height: 48),
               const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
             ],
