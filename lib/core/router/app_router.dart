@@ -9,7 +9,7 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/school_registration_screen.dart';
 import '../../features/attendance/presentation/screens/attendance_screen.dart';
 import '../../features/finance/presentation/screens/finance_screen.dart';
-import '../../features/communication/presentation/screens/communication_screen.dart';
+import '../../features/communication/presentation/screens/communication_center_screen.dart';
 import '../../features/class/presentation/screens/class_screen.dart';
 import '../../features/teacher/presentation/screens/teacher_screen.dart';
 import '../../features/teacher/presentation/screens/teacher_dashboard_screen.dart';
@@ -65,7 +65,7 @@ class AppRouter {
       GoRoute(path: '/teacher', builder: (_, __) => const TeacherScreen()),
       GoRoute(path: '/attendance', builder: (_, __) => const AttendanceScreen()),
       GoRoute(path: '/finance', builder: (_, __) => const FinanceScreen()),
-      GoRoute(path: '/communication', builder: (_, __) => const CommunicationScreen()),
+      GoRoute(path: '/communication', builder: (_, __) => const CommunicationCenterScreen()),
       GoRoute(path: '/academics', builder: (_, __) => const AcademicScreen()),
       GoRoute(path: '/accounting', builder: (_, __) => const AccountingScreen()),
       GoRoute(path: '/assignment', builder: (_, __) => const AssignmentsScreen()),
