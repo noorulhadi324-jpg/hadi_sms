@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/supabase_client.dart';
+import '../../../../core/widgets/main_wrapper.dart';
 import '../../data/repositories/communication_repository_impl.dart';
 
 final communicationRepositoryProvider = Provider<CommunicationRepositoryImpl>((ref) {
