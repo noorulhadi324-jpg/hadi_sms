@@ -10,603 +10,223 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/supabase_client.dart';
 import '../../../../core/widgets/main_wrapper.dart';
 
-/// ===============================================================
-/// RESULT CARD - EXAMS
-/// ===============================================================
-
 final resultCardExamsProvider =
 FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final client = SupabaseConfig.client;
+  final c = SupabaseConfig.client;
 
-  final schoolId = await ref.watch(
-    schoolIdProvider.future,
+  final sid = await ref.watch(schoolIdProvider.future);
+
+  if (sid == null) return [];
+
+  return List<Map<String, dynamic>>.from(
+    await c
+        .from('exams')
+        .select('*')
+        .eq('school_id', sid)
+        .order('exam_date', ascending: false),
   );
-
-  if (schoolId == null) {
-    return [];
-  }
-
-  final response = await client
-      .from('exams')
-      .select('*')
-      .eq('school_id', schoolId)
-      .order(
-    'exam_date',
-    ascending: false,
-  );
-
-  return List<Map<String, dynamic>>.from(response);
 });
-
-/// ===============================================================
-/// RESULT CARD - STUDENTS
-/// ===============================================================
 
 final resultCardStudentsProvider =
 FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final client = SupabaseConfig.client;
+  final c = SupabaseConfig.client;
 
-  final schoolId = await ref.watch(
-    schoolIdProvider.future,
+  final sid = await ref.watch(schoolIdProvider.future);
+
+  if (sid == null) return [];
+
+  return List<Map<String, dynamic>>.from(
+    await c
+        .from('students')
+        .select(
+      'id,full_name,admission_number,class_name,section_name',
+    )
+        .eq('school_id', sid)
+        .eq('is_active', true)
+        .order('full_name'),
   );
-
-  if (schoolId == null) {
-    return [];
-  }
-
-  final response = await client
-      .from('students')
-      .select(
-    'id,full_name,admission_number,class_name,section_name',
-  )
-      .eq(
-    'school_id',
-    schoolId,
-  )
-      .eq(
-    'is_active',
-    true,
-  )
-      .order(
-    'full_name',
-  );
-
-  return List<Map<String, dynamic>>.from(response);
 });
 
-/// ===============================================================
-/// RESULT CARD DATA
-/// ===============================================================
-
-final resultCardDataProvider =
-FutureProvider.autoDispose.family<
-    Map<String, dynamic>,
-    String>((ref, key) async {
+final resultCardDataProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, key) async {
   final parts = key.split(':');
 
   if (parts.length != 2) {
-    throw Exception(
-      'Invalid result card selection.',
-    );
+    throw Exception('Invalid result card selection.');
   }
 
-  final examId = int.tryParse(parts[0]);
-  final studentId = int.tryParse(parts[1]);
+  final examId = int.parse(parts[0]);
+  final studentId = int.parse(parts[1]);
 
-  if (examId == null || studentId == null) {
-    throw Exception(
-      'Invalid examination or student.',
-    );
+  final c = SupabaseConfig.client;
+
+  final sid = await ref.watch(schoolIdProvider.future);
+
+  if (sid == null) {
+    throw Exception('School not linked.');
   }
 
-  final client = SupabaseConfig.client;
-
-  final schoolId = await ref.watch(
-    schoolIdProvider.future,
+  final students = List<Map<String, dynamic>>.from(
+    await c.from('students').select('*').eq('school_id', sid),
   );
 
-  if (schoolId == null) {
-    throw Exception(
-      'School not linked.',
-    );
+  final st = students.firstWhere(
+        (x) => (x['id'] as num?)?.toInt() == studentId,
+    orElse: () => <String, dynamic>{},
+  );
+
+  if (st.isEmpty) {
+    throw Exception('Student not found.');
   }
 
-  /// -------------------------------------------------------------
-  /// STUDENTS
-  /// -------------------------------------------------------------
-
-  final studentsResponse = await client
-      .from('students')
-      .select('*')
-      .eq(
-    'school_id',
-    schoolId,
+  final exams = List<Map<String, dynamic>>.from(
+    await c
+        .from('exams')
+        .select('*')
+        .eq('school_id', sid)
+        .eq('id', examId),
   );
 
-  final students =
-  List<Map<String, dynamic>>.from(
-    studentsResponse,
+  final exam = exams.isEmpty ? <String, dynamic>{} : exams.first;
+
+  final results = List<Map<String, dynamic>>.from(
+    await c
+        .from('exam_results')
+        .select('*')
+        .eq('school_id', sid)
+        .eq('exam_id', examId),
   );
 
-  Map<String, dynamic>? student;
+  final examSubjects = List<Map<String, dynamic>>.from(
+    await c
+        .from('exam_subjects')
+        .select('*')
+        .eq('school_id', sid)
+        .eq('exam_id', examId),
+  );
 
-  for (final row in students) {
-    final id = _toInt(row['id']);
+  final subjectRows = List<Map<String, dynamic>>.from(
+    await c.from('subjects').select('*').eq('school_id', sid),
+  );
 
-    if (id == studentId) {
-      student = row;
-      break;
-    }
+  double obtained(Map<String, dynamic> r) {
+    return (r['obtained_marks'] as num?)?.toDouble() ?? 0.0;
   }
 
-  if (student == null) {
-    throw Exception(
-      'Student record not found.',
-    );
-  }
-
-  /// -------------------------------------------------------------
-  /// EXAM
-  /// -------------------------------------------------------------
-
-  final examResponse = await client
-      .from('exams')
-      .select('*')
-      .eq(
-    'school_id',
-    schoolId,
-  )
-      .eq(
-    'id',
-    examId,
-  );
-
-  final exams =
-  List<Map<String, dynamic>>.from(
-    examResponse,
-  );
-
-  if (exams.isEmpty) {
-    throw Exception(
-      'Examination not found.',
-    );
-  }
-
-  final exam = exams.first;
-
-  /// -------------------------------------------------------------
-  /// EXAM RESULTS
-  /// -------------------------------------------------------------
-
-  final resultsResponse = await client
-      .from('exam_results')
-      .select('*')
-      .eq(
-    'school_id',
-    schoolId,
-  )
-      .eq(
-    'exam_id',
-    examId,
-  );
-
-  final results =
-  List<Map<String, dynamic>>.from(
-    resultsResponse,
-  );
-
-  /// -------------------------------------------------------------
-  /// EXAM SUBJECTS
-  /// -------------------------------------------------------------
-
-  final examSubjectsResponse = await client
-      .from('exam_subjects')
-      .select('*')
-      .eq(
-    'school_id',
-    schoolId,
-  )
-      .eq(
-    'exam_id',
-    examId,
-  );
-
-  final examSubjects =
-  List<Map<String, dynamic>>.from(
-    examSubjectsResponse,
-  );
-
-  /// -------------------------------------------------------------
-  /// SUBJECTS
-  /// -------------------------------------------------------------
-
-  final subjectsResponse = await client
-      .from('subjects')
-      .select('*')
-      .eq(
-    'school_id',
-    schoolId,
-  );
-
-  final subjects =
-  List<Map<String, dynamic>>.from(
-    subjectsResponse,
-  );
-
-  /// -------------------------------------------------------------
-  /// HELPER
-  /// -------------------------------------------------------------
-
-  double obtainedMarks(
-      Map<String, dynamic> result,
-      ) {
-    final value = result['obtained_marks'];
-
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    return double.tryParse(
-      value?.toString() ?? '',
-    ) ??
-        0;
-  }
-
-  int? studentIdFrom(
-      Map<String, dynamic> row,
-      ) {
-    return _toInt(
-      row['student_id'],
-    );
-  }
-
-  /// -------------------------------------------------------------
-  /// STUDENT RESULTS
-  /// -------------------------------------------------------------
-
-  final myResults = results.where(
-        (result) {
-      return studentIdFrom(result) ==
-          studentId;
-    },
-  ).toList();
-
-  /// -------------------------------------------------------------
-  /// CLASS / SECTION
-  /// -------------------------------------------------------------
-
-  final className =
-  (student['class_name'] ?? '')
-      .toString();
-
-  final sectionName =
-  (student['section_name'] ?? '')
-      .toString();
-
-  /// -------------------------------------------------------------
-  /// CLASSMATES
-  /// -------------------------------------------------------------
-
-  final classmates = students.where(
-        (row) {
-      final rowClass =
-      (row['class_name'] ?? '')
-          .toString();
-
-      final rowSection =
-      (row['section_name'] ?? '')
-          .toString();
-
-      return rowClass == className &&
-          rowSection == sectionName;
-    },
-  ).toList();
-
-  /// -------------------------------------------------------------
-  /// STUDENT TOTAL
-  /// -------------------------------------------------------------
-
-  double studentTotal(
-      int id,
-      ) {
+  double studentTotal(int id) {
     return results
         .where(
-          (result) =>
-      studentIdFrom(result) == id,
+          (r) => (r['student_id'] as num?)?.toInt() == id,
     )
-        .fold(
+        .fold<double>(
       0.0,
-          (
-          total,
-          result,
-          ) =>
-      total +
-          obtainedMarks(result),
+          (a, r) => a + obtained(r),
     );
   }
 
-  /// -------------------------------------------------------------
-  /// CLASS SCORES
-  /// -------------------------------------------------------------
+  final mine = results
+      .where(
+        (r) => (r['student_id'] as num?)?.toInt() == studentId,
+  )
+      .toList();
+
+  final className = (st['class_name'] ?? '').toString();
+  final section = (st['section_name'] ?? '').toString();
+
+  final classmates = students
+      .where(
+        (s) =>
+    (s['class_name'] ?? '').toString() == className &&
+        (s['section_name'] ?? '').toString() == section,
+  )
+      .toList();
 
   final scores = classmates
       .map(
-        (row) {
-      final id = _toInt(
-        row['id'],
-      );
-
-      if (id == null) {
-        return 0.0;
-      }
-
-      return studentTotal(id);
-    },
+        (s) => studentTotal(
+      (s['id'] as num).toInt(),
+    ),
   )
-      .where(
-        (score) => score > 0,
-  )
+      .where((x) => x > 0)
       .toList()
     ..sort(
           (a, b) => b.compareTo(a),
     );
 
-  /// -------------------------------------------------------------
-  /// TOTAL EXAM MARKS
-  /// -------------------------------------------------------------
+  final double total = examSubjects.fold<double>(
+    0.0,
+        (a, s) =>
+    a + ((s['total_marks'] as num?)?.toDouble() ?? 0.0),
+  );
 
-  double totalMarks = 0;
+  final double got = mine.fold<double>(
+    0.0,
+        (a, r) => a + obtained(r),
+  );
 
-  for (final subject in examSubjects) {
-    final marks = subject['total_marks'];
+  final double pct =
+  total > 0.0 ? (got / total * 100.0) : 0.0;
 
-    if (marks is num) {
-      totalMarks += marks.toDouble();
-    } else {
-      totalMarks +=
-          double.tryParse(
-            marks?.toString() ?? '',
-          ) ??
-              0;
-    }
-  }
-
-  /// -------------------------------------------------------------
-  /// OBTAINED MARKS
-  /// -------------------------------------------------------------
-
-  double obtained = 0;
-
-  for (final result in myResults) {
-    obtained += obtainedMarks(
-      result,
-    );
-  }
-
-  /// -------------------------------------------------------------
-  /// PERCENTAGE
-  /// -------------------------------------------------------------
-
-  final percentage = totalMarks > 0
-      ? (obtained / totalMarks) * 100
-      : 0.0;
-
-  /// -------------------------------------------------------------
-  /// GRADE
-  /// -------------------------------------------------------------
-
-  String calculateGrade(
-      double value,
-      ) {
-    if (value >= 90) {
-      return 'A+';
-    }
-
-    if (value >= 80) {
-      return 'A';
-    }
-
-    if (value >= 70) {
-      return 'B';
-    }
-
-    if (value >= 60) {
-      return 'C';
-    }
-
-    if (value >= 50) {
-      return 'D';
-    }
-
+  String grade(double p) {
+    if (p >= 90) return 'A+';
+    if (p >= 80) return 'A';
+    if (p >= 70) return 'B';
+    if (p >= 60) return 'C';
+    if (p >= 50) return 'D';
     return 'F';
   }
 
-  /// -------------------------------------------------------------
-  /// POSITION
-  /// -------------------------------------------------------------
-
-  int position = 0;
-
-  if (obtained > 0) {
-    final index =
-    scores.indexOf(obtained);
-
-    if (index >= 0) {
-      position = index + 1;
-    }
-  }
-
-  /// -------------------------------------------------------------
-  /// SUBJECT RESULT ROWS
-  /// -------------------------------------------------------------
-
-  final rows =
-  <Map<String, dynamic>>[];
-
-  for (final result in myResults) {
-    final examSubjectId =
-    _toInt(
-      result['exam_subject_id'],
+  final rows = mine.map((r) {
+    final es = examSubjects.firstWhere(
+          (x) =>
+      (x['id'] as num?)?.toInt() ==
+          (r['exam_subject_id'] as num?)?.toInt(),
+      orElse: () => <String, dynamic>{},
     );
 
-    if (examSubjectId == null) {
-      continue;
-    }
-
-    Map<String, dynamic>? examSubject;
-
-    for (final row in examSubjects) {
-      if (_toInt(row['id']) ==
-          examSubjectId) {
-        examSubject = row;
-        break;
-      }
-    }
-
-    if (examSubject == null) {
-      continue;
-    }
-
-    final subjectId =
-    _toInt(
-      examSubject['subject_id'],
+    final sj = subjectRows.firstWhere(
+          (x) =>
+      (x['id'] as num?)?.toInt() ==
+          (es['subject_id'] as num?)?.toInt(),
+      orElse: () => <String, dynamic>{},
     );
 
-    Map<String, dynamic>? subject;
+    final double tm =
+        (es['total_marks'] as num?)?.toDouble() ?? 0.0;
 
-    for (final row in subjects) {
-      if (_toInt(row['id']) ==
-          subjectId) {
-        subject = row;
-        break;
-      }
-    }
+    final double op = obtained(r);
 
-    final total =
-    _toDouble(
-      examSubject['total_marks'],
-    );
-
-    final subjectObtained =
-    obtainedMarks(result);
-
-    final calculatedPercentage =
-    total > 0
-        ? (subjectObtained /
-        total) *
-        100
-        : 0.0;
-
-    final savedGrade =
-    result['grade']
-        ?.toString()
-        .trim();
-
-    final grade =
-    savedGrade != null &&
-        savedGrade.isNotEmpty
-        ? savedGrade
-        : calculateGrade(
-      calculatedPercentage,
-    );
-
-    rows.add(
-      {
-        'subject':
-        subject?['name'] ??
-            'Subject',
-        'obtained':
-        subjectObtained,
-        'total':
-        total,
-        'grade':
-        grade,
-        'remarks':
-        result['remarks'] ??
-            '',
-      },
-    );
-  }
-
-  /// Sort subjects alphabetically.
-  rows.sort(
-        (a, b) => a['subject']
-        .toString()
-        .compareTo(
-      b['subject'].toString(),
-    ),
-  );
+    return <String, dynamic>{
+      'subject': sj['name'] ?? 'Subject',
+      'obtained': op,
+      'total': tm,
+      'grade': r['grade'] ??
+          grade(
+            tm > 0.0 ? (op / tm * 100.0) : 0.0,
+          ),
+      'remarks': r['remarks'] ?? '',
+    };
+  }).toList();
 
   return {
-    'student': student,
+    'student': st,
     'exam': exam,
     'rows': rows,
-    'obtained': obtained,
-    'total': totalMarks,
-    'percentage': percentage,
-    'grade': calculateGrade(
-      percentage,
-    ),
-    'position': position,
+    'obtained': got,
+    'total': total,
+    'percentage': pct,
+    'grade': grade(pct),
+    'position': got > 0.0 ? scores.indexOf(got) + 1 : 0,
     'className': className,
-    'section': sectionName,
+    'section': section,
   };
 });
 
-/// ===============================================================
-/// HELPERS
-/// ===============================================================
-
-int? _toInt(
-    dynamic value,
-    ) {
-  if (value == null) {
-    return null;
-  }
-
-  if (value is int) {
-    return value;
-  }
-
-  if (value is num) {
-    return value.toInt();
-  }
-
-  return int.tryParse(
-    value.toString(),
-  );
-}
-
-double _toDouble(
-    dynamic value,
-    ) {
-  if (value == null) {
-    return 0;
-  }
-
-  if (value is num) {
-    return value.toDouble();
-  }
-
-  return double.tryParse(
-    value.toString(),
-  ) ??
-      0;
-}
-
-/// ===============================================================
-/// RESULT CARD SCREEN
-/// ===============================================================
-
-class ResultCardScreen
-    extends ConsumerStatefulWidget {
-  const ResultCardScreen({
-    super.key,
-  });
+class ResultCardScreen extends ConsumerStatefulWidget {
+  const ResultCardScreen({super.key});
 
   @override
-  ConsumerState<ResultCardScreen>
-  createState() =>
+  ConsumerState<ResultCardScreen> createState() =>
       _ResultCardScreenState();
 }
 
@@ -616,527 +236,292 @@ class _ResultCardScreenState
   int? studentId;
 
   @override
-  Widget build(
-      BuildContext context,
-      ) {
-    final exams =
-    ref.watch(
-      resultCardExamsProvider,
-    );
-
-    final students =
-    ref.watch(
-      resultCardStudentsProvider,
-    );
+  Widget build(BuildContext context) {
+    final exams = ref.watch(resultCardExamsProvider);
+    final students = ref.watch(resultCardStudentsProvider);
 
     return MainWrapper(
       child: exams.when(
         loading: () => const Center(
-          child:
-          CircularProgressIndicator(),
+          child: CircularProgressIndicator(),
         ),
-        error: (
-            error,
-            stack,
-            ) =>
-            _ErrorView(
-              message: error.toString(),
-              onRetry: () {
-                ref.invalidate(
-                  resultCardExamsProvider,
-                );
-              },
-            ),
-        data: (examList) =>
-            students.when(
-              loading: () => const Center(
-                child:
-                CircularProgressIndicator(),
-              ),
-              error: (
-                  error,
-                  stack,
-                  ) =>
-                  _ErrorView(
-                    message: error.toString(),
-                    onRetry: () {
-                      ref.invalidate(
-                        resultCardStudentsProvider,
-                      );
-                    },
-                  ),
-              data: (studentList) =>
-                  _buildBody(
-                    context,
-                    examList,
-                    studentList,
-                  ),
-            ),
+        error: (e, _) => Center(
+          child: Text(e.toString()),
+        ),
+        data: (examList) => students.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          error: (e, _) => Center(
+            child: Text(e.toString()),
+          ),
+          data: (studentList) =>
+              _body(context, examList, studentList),
+        ),
       ),
     );
   }
 
-  /// =============================================================
-  /// BODY
-  /// =============================================================
-
-  Widget _buildBody(
+  Widget _body(
       BuildContext context,
       List<Map<String, dynamic>> exams,
       List<Map<String, dynamic>> students,
       ) {
     return ListView(
-      padding: const EdgeInsets.all(
-        22,
-      ),
+      padding: const EdgeInsets.all(22),
       children: [
         const Text(
           'Result Card',
           style: TextStyle(
             fontSize: 28,
-            fontWeight:
-            FontWeight.w900,
+            fontWeight: FontWeight.w900,
           ),
         ),
-
-        const SizedBox(
-          height: 5,
-        ),
-
+        const SizedBox(height: 5),
         const Text(
           'Generate, preview and print the final student result card.',
         ),
-
-        const SizedBox(
-          height: 22,
-        ),
-
-        Card(
-          child: Padding(
-            padding:
-            const EdgeInsets.all(
-              18,
-            ),
-            child: Wrap(
-              spacing: 14,
-              runSpacing: 14,
-              children: [
-                SizedBox(
-                  width: 320,
-                  child:
-                  DropdownButtonFormField<
-                      int>(
-                    value: examId,
-                    decoration:
-                    const InputDecoration(
-                      labelText:
-                      'Examination',
-                      border:
-                      OutlineInputBorder(),
-                      prefixIcon:
-                      Icon(
-                        Icons
-                            .assignment_rounded,
-                      ),
-                    ),
-                    items: exams.map(
-                          (
-                          exam,
-                          ) {
-                        final id =
-                        _toInt(
-                          exam['id'],
-                        );
-
-                        return DropdownMenuItem<
-                            int>(
-                          value: id,
-                          child: Text(
-                            exam['title']
-                                ?.toString() ??
-                                'Examination',
-                          ),
-                        );
-                      },
-                    ).toList(),
-                    onChanged: (
-                        value,
-                        ) {
-                      setState(
-                            () {
-                          examId =
-                              value;
-
-                          /// New exam means
-                          /// reset student.
-                          studentId =
-                          null;
-                        },
-                      );
-                    },
-                  ),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            SizedBox(
+              width: 300,
+              child: DropdownButtonFormField<int>(
+                value: examId,
+                decoration: const InputDecoration(
+                  labelText: 'Examination',
+                  border: OutlineInputBorder(),
                 ),
-
-                SizedBox(
-                  width: 320,
-                  child:
-                  DropdownButtonFormField<
-                      int>(
-                    value: studentId,
-                    decoration:
-                    const InputDecoration(
-                      labelText:
-                      'Student',
-                      border:
-                      OutlineInputBorder(),
-                      prefixIcon:
-                      Icon(
-                        Icons
-                            .person_rounded,
-                      ),
+                items: exams
+                    .map(
+                      (e) => DropdownMenuItem<int>(
+                    value: (e['id'] as num).toInt(),
+                    child: Text(
+                      (e['title'] ?? 'Examination').toString(),
                     ),
-                    items: students.map(
-                          (
-                          student,
-                          ) {
-                        final id =
-                        _toInt(
-                          student['id'],
-                        );
-
-                        return DropdownMenuItem<
-                            int>(
-                          value: id,
-                          child: Text(
-                            student['full_name']
-                                ?.toString() ??
-                                'Student',
-                          ),
-                        );
-                      },
-                    ).toList(),
-                    onChanged: (
-                        value,
-                        ) {
-                      setState(
-                            () {
-                          studentId =
-                              value;
-                        },
-                      );
-                    },
                   ),
-                ),
-              ],
+                )
+                    .toList(),
+                onChanged: (v) {
+                  setState(() {
+                    examId = v;
+                    studentId = null;
+                  });
+                },
+              ),
             ),
-          ),
+            SizedBox(
+              width: 300,
+              child: DropdownButtonFormField<int>(
+                value: studentId,
+                decoration: const InputDecoration(
+                  labelText: 'Student',
+                  border: OutlineInputBorder(),
+                ),
+                items: students
+                    .map(
+                      (s) => DropdownMenuItem<int>(
+                    value: (s['id'] as num).toInt(),
+                    child: Text(
+                      (s['full_name'] ?? 'Student').toString(),
+                    ),
+                  ),
+                )
+                    .toList(),
+                onChanged: (v) {
+                  setState(() {
+                    studentId = v;
+                  });
+                },
+              ),
+            ),
+          ],
         ),
-
-        const SizedBox(
-          height: 22,
-        ),
-
-        if (examId != null &&
-            studentId != null)
-          ref.watch(
+        const SizedBox(height: 22),
+        if (examId != null && studentId != null)
+          ref
+              .watch(
             resultCardDataProvider(
               '$examId:$studentId',
             ),
-          ).when(
-            loading: () =>
-            const Center(
-              child:
-              Padding(
-                padding:
-                EdgeInsets.all(
-                  30,
-                ),
-                child:
-                CircularProgressIndicator(),
-              ),
+          )
+              .when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
             ),
-            error: (
-                error,
-                stack,
-                ) =>
-                _ErrorView(
-                  message:
-                  error.toString(),
-                  onRetry: () {
-                    ref.invalidate(
-                      resultCardDataProvider(
-                        '$examId:$studentId',
-                      ),
-                    );
-                  },
-                ),
-            data: (
-                data,
-                ) =>
-                _buildResultCard(
-                  context,
-                  data,
-                ),
+            error: (e, _) => Text(e.toString()),
+            data: (data) => _result(
+              context,
+              data,
+            ),
           ),
       ],
     );
   }
 
-  /// =============================================================
-  /// RESULT CARD PREVIEW
-  /// =============================================================
-
-  Widget _buildResultCard(
+  Widget _result(
       BuildContext context,
       Map<String, dynamic> data,
       ) {
-    final student =
-    data['student']
-    as Map<String, dynamic>;
+    final st = data['student'] as Map<String, dynamic>;
 
-    final exam =
-    data['exam']
-    as Map<String, dynamic>;
-
-    final rows =
-    List<Map<String, dynamic>>.from(
-      data['rows'] as List,
+    final rows = List<Map<String, dynamic>>.from(
+      data['rows'],
     );
 
-    final percentage =
-    _toDouble(
-      data['percentage'],
-    );
+    final double percentage =
+    (data['percentage'] as num).toDouble();
 
-    final position =
-        _toInt(
-          data['position'],
-        ) ??
-            0;
+    final int position =
+        (data['position'] as num?)?.toInt() ?? 0;
 
     return Card(
-      elevation: 2,
       child: Padding(
-        padding:
-        const EdgeInsets.all(
-          24,
-        ),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HEADER
             Center(
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     'RESULT CARD',
                     style: TextStyle(
-                      fontSize: 26,
-                      fontWeight:
-                      FontWeight.w900,
-                      color:
-                      AppColors.primary,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(
-                    height: 5,
-                  ),
                   Text(
-                    exam['title']
-                        ?.toString() ??
-                        'Examination',
-                    style:
-                    const TextStyle(
-                      fontSize: 17,
-                      fontWeight:
-                      FontWeight.w700,
+                    '${data['exam']['title'] ?? 'Examination'}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
             ),
-
-            const Divider(
-              height: 32,
-            ),
-
-            /// STUDENT INFO
+            const Divider(height: 30),
             Wrap(
-              spacing: 30,
-              runSpacing: 12,
+              spacing: 28,
+              runSpacing: 8,
               children: [
-                _infoItem(
-                  'Student',
-                  student['full_name']
-                      ?.toString() ??
-                      '—',
+                Text(
+                  'Student: ${st['full_name']}',
                 ),
-                _infoItem(
-                  'Admission No.',
-                  student[
-                  'admission_number']
-                      ?.toString() ??
-                      '—',
+                Text(
+                  'Admission: ${st['admission_number'] ?? '—'}',
                 ),
-                _infoItem(
-                  'Class',
-                  '${data['className'] ?? '—'} ${data['section'] ?? ''}'
-                      .trim(),
+                Text(
+                  'Class: ${data['className']} ${data['section']}',
                 ),
-                _infoItem(
-                  'Position',
-                  position > 0
-                      ? position
-                      .toString()
-                      : '—',
+                Text(
+                  'Position: ${position > 0 ? position : '—'}',
                 ),
               ],
             ),
-
-            const SizedBox(
-              height: 24,
-            ),
-
-            /// SUBJECT TABLE
-            if (rows.isEmpty)
-              Container(
-                width:
-                double.infinity,
-                padding:
-                const EdgeInsets.all(
-                  18,
+            const SizedBox(height: 18),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Table(
+                border: TableBorder.all(
+                  color: Colors.grey,
                 ),
-                decoration:
-                BoxDecoration(
-                  border:
-                  Border.all(
-                    color:
-                    Colors.grey,
-                  ),
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    8,
-                  ),
-                ),
-                child: const Text(
-                  'No marks have been entered for this student yet.',
-                ),
-              )
-            else
-              SingleChildScrollView(
-                scrollDirection:
-                Axis.horizontal,
-                child: Table(
-                  defaultColumnWidth:
-                  const IntrinsicColumnWidth(),
-                  border:
-                  TableBorder.all(
-                    color:
-                    Colors.grey,
-                  ),
-                  children: [
-                    const TableRow(
-                      children: [
-                        _TableHeader(
+                defaultColumnWidth:
+                const IntrinsicColumnWidth(),
+                children: [
+                  const TableRow(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
                           'Subject',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        _TableHeader(
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
                           'Obtained',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        _TableHeader(
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
                           'Total',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        _TableHeader(
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
                           'Grade',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  ...rows.map(
+                        (r) => TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            r['subject'].toString(),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            r['obtained'].toString(),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            r['total'].toString(),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            r['grade'].toString(),
+                          ),
                         ),
                       ],
                     ),
-                    ...rows.map(
-                          (
-                          row,
-                          ) =>
-                          TableRow(
-                            children: [
-                              _TableCell(
-                                row['subject']
-                                    ?.toString() ??
-                                    'Subject',
-                              ),
-                              _TableCell(
-                                _formatNumber(
-                                  row[
-                                  'obtained'],
-                                ),
-                              ),
-                              _TableCell(
-                                _formatNumber(
-                                  row['total'],
-                                ),
-                              ),
-                              _TableCell(
-                                row['grade']
-                                    ?.toString() ??
-                                    '—',
-                              ),
-                            ],
-                          ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-
-            const SizedBox(
-              height: 24,
             ),
-
-            /// SUMMARY
-            Wrap(
-              spacing: 18,
-              runSpacing: 12,
-              children: [
-                _summaryBox(
-                  'Total Marks',
-                  '${_formatNumber(data['obtained'])} / ${_formatNumber(data['total'])}',
-                ),
-                _summaryBox(
-                  'Percentage',
-                  '${percentage.toStringAsFixed(2)}%',
-                ),
-                _summaryBox(
-                  'Overall Grade',
-                  data['grade']
-                      ?.toString() ??
-                      '—',
-                ),
-                _summaryBox(
-                  'Position',
-                  position > 0
-                      ? position
-                      .toString()
-                      : '—',
-                ),
-              ],
+            const SizedBox(height: 18),
+            Text(
+              'Total: ${data['obtained']} / ${data['total']}',
             ),
-
-            const SizedBox(
-              height: 24,
+            Text(
+              'Percentage: ${percentage.toStringAsFixed(2)}%',
             ),
-
-            /// PDF BUTTON
+            Text(
+              'Overall Grade: ${data['grade']}',
+            ),
+            const SizedBox(height: 18),
             Align(
-              alignment:
-              Alignment.centerRight,
-              child:
-              FilledButton.icon(
-                onPressed: () =>
-                    _printResultCard(
-                      data,
-                    ),
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: () => _print(data),
                 icon: const Icon(
-                  Icons
-                      .picture_as_pdf_rounded,
+                  Icons.picture_as_pdf,
                 ),
                 label: const Text(
                   'Export / Print PDF',
@@ -1149,497 +534,100 @@ class _ResultCardScreenState
     );
   }
 
-  /// =============================================================
-  /// INFO ITEM
-  /// =============================================================
-
-  Widget _infoItem(
-      String label,
-      String value,
-      ) {
-    return SizedBox(
-      width: 210,
-      child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style:
-            const TextStyle(
-              fontSize: 12,
-              fontWeight:
-              FontWeight.w600,
-              color:
-              Colors.grey,
-            ),
-          ),
-          const SizedBox(
-            height: 3,
-          ),
-          Text(
-            value,
-            style:
-            const TextStyle(
-              fontSize: 15,
-              fontWeight:
-              FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// =============================================================
-  /// SUMMARY BOX
-  /// =============================================================
-
-  Widget _summaryBox(
-      String title,
-      String value,
-      ) {
-    return Container(
-      width: 190,
-      padding:
-      const EdgeInsets.all(
-        14,
-      ),
-      decoration:
-      BoxDecoration(
-        border:
-        Border.all(
-          color:
-          Colors.grey.shade300,
-        ),
-        borderRadius:
-        BorderRadius.circular(
-          10,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style:
-            const TextStyle(
-              fontSize: 12,
-              fontWeight:
-              FontWeight.w600,
-            ),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Text(
-            value,
-            style:
-            const TextStyle(
-              fontSize: 18,
-              fontWeight:
-              FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// =============================================================
-  /// PRINT / PDF
-  /// =============================================================
-
-  Future<void> _printResultCard(
+  Future<void> _print(
       Map<String, dynamic> data,
       ) async {
-    try {
-      final document =
-      pw.Document();
+    final doc = pw.Document();
 
-      final student =
-      data['student']
-      as Map<String, dynamic>;
+    final st =
+    data['student'] as Map<String, dynamic>;
 
-      final exam =
-      data['exam']
-      as Map<String, dynamic>;
-
-      final rows =
-      List<Map<String, dynamic>>.from(
-        data['rows'] as List,
-      );
-
-      final percentage =
-      _toDouble(
-        data['percentage'],
-      );
-
-      final position =
-          _toInt(
-            data['position'],
-          ) ??
-              0;
-
-      document.addPage(
-        pw.Page(
-          pageFormat:
-          PdfPageFormat.a4,
-          margin:
-          const pw.EdgeInsets.all(
-            32,
-          ),
-          build: (
-              context,
-              ) {
-            return pw.Column(
-              crossAxisAlignment:
-              pw.CrossAxisAlignment
-                  .start,
-              children: [
-                pw.Center(
-                  child: pw.Column(
-                    children: [
-                      pw.Text(
-                        'RESULT CARD',
-                        style:
-                        pw.TextStyle(
-                          fontSize: 25,
-                          fontWeight:
-                          pw.FontWeight
-                              .bold,
-                        ),
-                      ),
-                      pw.SizedBox(
-                        height: 6,
-                      ),
-                      pw.Text(
-                        exam['title']
-                            ?.toString() ??
-                            'Examination',
-                        style:
-                        pw.TextStyle(
-                          fontSize: 15,
-                          fontWeight:
-                          pw.FontWeight
-                              .bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                pw.SizedBox(
-                  height: 20,
-                ),
-
-                pw.Divider(),
-
-                pw.SizedBox(
-                  height: 10,
-                ),
-
-                pw.Text(
-                  'Student: ${student['full_name'] ?? '—'}',
-                ),
-
-                pw.SizedBox(
-                  height: 5,
-                ),
-
-                pw.Text(
-                  'Admission No.: ${student['admission_number'] ?? '—'}',
-                ),
-
-                pw.SizedBox(
-                  height: 5,
-                ),
-
-                pw.Text(
-                  'Class: ${(data['className'] ?? '—').toString()} ${(data['section'] ?? '').toString()}'
-                      .trim(),
-                ),
-
-                pw.SizedBox(
-                  height: 5,
-                ),
-
-                pw.Text(
-                  'Position: ${position > 0 ? position : '—'}',
-                ),
-
-                pw.SizedBox(
-                  height: 18,
-                ),
-
-                if (rows.isNotEmpty)
-                  pw.Table.fromTextArray(
-                    headers: [
-                      'Subject',
-                      'Obtained',
-                      'Total',
-                      'Grade',
-                    ],
-                    data: rows.map(
-                          (
-                          row,
-                          ) {
-                        return [
-                          row['subject']
-                              ?.toString() ??
-                              'Subject',
-                          _formatNumber(
-                            row[
-                            'obtained'],
-                          ),
-                          _formatNumber(
-                            row['total'],
-                          ),
-                          row['grade']
-                              ?.toString() ??
-                              '—',
-                        ];
-                      },
-                    ).toList(),
-                  )
-                else
-                  pw.Text(
-                    'No marks entered.',
-                  ),
-
-                pw.SizedBox(
-                  height: 18,
-                ),
-
-                pw.Text(
-                  'Total Marks: ${_formatNumber(data['obtained'])} / ${_formatNumber(data['total'])}',
-                  style:
-                  pw.TextStyle(
-                    fontWeight:
-                    pw.FontWeight.bold,
-                  ),
-                ),
-
-                pw.SizedBox(
-                  height: 5,
-                ),
-
-                pw.Text(
-                  'Percentage: ${percentage.toStringAsFixed(2)}%',
-                ),
-
-                pw.SizedBox(
-                  height: 5,
-                ),
-
-                pw.Text(
-                  'Overall Grade: ${data['grade'] ?? '—'}',
-                ),
-
-                pw.SizedBox(
-                  height: 5,
-                ),
-
-                pw.Text(
-                  'Position: ${position > 0 ? position : '—'}',
-                ),
-
-                pw.Spacer(),
-
-                pw.Divider(),
-
-                pw.SizedBox(
-                  height: 20,
-                ),
-
-                pw.Row(
-                  mainAxisAlignment:
-                  pw.MainAxisAlignment
-                      .spaceBetween,
-                  children: [
-                    pw.Text(
-                      'Class Teacher',
-                    ),
-                    pw.Text(
-                      'Principal',
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      );
-
-      final bytes =
-      Uint8List.fromList(
-        await document.save(),
-      );
-
-      await Printing.layoutPdf(
-        onLayout: (
-            format,
-            ) async {
-          return bytes;
-        },
-      );
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text(
-            'PDF generation failed: $error',
-          ),
-        ),
-      );
-    }
-  }
-}
-
-/// ===============================================================
-/// TABLE HEADER
-/// ===============================================================
-
-class _TableHeader
-    extends StatelessWidget {
-  final String text;
-
-  const _TableHeader(
-      this.text,
-      );
-
-  @override
-  Widget build(
-      BuildContext context,
-      ) {
-    return Padding(
-      padding:
-      const EdgeInsets.all(
-        10,
-      ),
-      child: Text(
-        text,
-        style:
-        const TextStyle(
-          fontWeight:
-          FontWeight.w800,
-        ),
-      ),
+    final rows =
+    List<Map<String, dynamic>>.from(
+      data['rows'],
     );
-  }
-}
 
-/// ===============================================================
-/// TABLE CELL
-/// ===============================================================
+    final double percentage =
+    (data['percentage'] as num).toDouble();
 
-class _TableCell
-    extends StatelessWidget {
-  final String text;
+    final int position =
+        (data['position'] as num?)?.toInt() ?? 0;
 
-  const _TableCell(
-      this.text,
-      );
-
-  @override
-  Widget build(
-      BuildContext context,
-      ) {
-    return Padding(
-      padding:
-      const EdgeInsets.all(
-        10,
-      ),
-      child: Text(
-        text,
-      ),
-    );
-  }
-}
-
-/// ===============================================================
-/// ERROR VIEW
-/// ===============================================================
-
-class _ErrorView
-    extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorView({
-    required this.message,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(
-      BuildContext context,
-      ) {
-    return Center(
-      child: Padding(
-        padding:
-        const EdgeInsets.all(
-          24,
-        ),
-        child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (_) => pw.Column(
+          crossAxisAlignment:
+          pw.CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons
-                  .error_outline_rounded,
-              size: 48,
-            ),
-            const SizedBox(
-              height: 12,
-            ),
-            Text(
-              message,
-              textAlign:
-              TextAlign.center,
-            ),
-            const SizedBox(
-              height: 14,
-            ),
-            OutlinedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(
-                Icons.refresh_rounded,
+            pw.Center(
+              child: pw.Text(
+                'RESULT CARD',
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight:
+                  pw.FontWeight.bold,
+                ),
               ),
-              label: const Text(
-                'Retry',
+            ),
+            pw.SizedBox(height: 10),
+            pw.Center(
+              child: pw.Text(
+                '${data['exam']['title'] ?? 'Examination'}',
               ),
+            ),
+            pw.SizedBox(height: 15),
+            pw.Text(
+              'Student: ${st['full_name']}',
+            ),
+            pw.Text(
+              'Admission: ${st['admission_number'] ?? '—'}',
+            ),
+            pw.Text(
+              'Class: ${data['className']} ${data['section']}',
+            ),
+            pw.Text(
+              'Position: ${position > 0 ? position : '—'}',
+            ),
+            pw.SizedBox(height: 15),
+            pw.Table.fromTextArray(
+              headers: [
+                'Subject',
+                'Obtained',
+                'Total',
+                'Grade',
+              ],
+              data: rows
+                  .map(
+                    (r) => [
+                  r['subject'].toString(),
+                  r['obtained'].toString(),
+                  r['total'].toString(),
+                  r['grade'].toString(),
+                ],
+              )
+                  .toList(),
+            ),
+            pw.SizedBox(height: 15),
+            pw.Text(
+              'Total: ${data['obtained']} / ${data['total']}',
+            ),
+            pw.Text(
+              'Percentage: ${percentage.toStringAsFixed(2)}%',
+            ),
+            pw.Text(
+              'Overall Grade: ${data['grade']}',
             ),
           ],
         ),
       ),
     );
+
+    final bytes =
+    Uint8List.fromList(await doc.save());
+
+    await Printing.layoutPdf(
+      onLayout: (_) async => bytes,
+    );
   }
-}
-
-/// ===============================================================
-/// NUMBER FORMAT
-/// ===============================================================
-
-String _formatNumber(
-    dynamic value,
-    ) {
-  final number =
-  _toDouble(value);
-
-  if (number ==
-      number.roundToDouble()) {
-    return number
-        .toInt()
-        .toString();
-  }
-
-  return number
-      .toStringAsFixed(2);
 }

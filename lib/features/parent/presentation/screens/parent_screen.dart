@@ -162,20 +162,27 @@ class _ParentsScreenState extends ConsumerState<ParentsScreen> {
             width: 460,
             child: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                TextField(controller: name, decoration: const InputDecoration(labelText: 'Full name', prefixIcon: Icon(Icons.person_outline))),
+                TextField(controller: name, decoration: const InputDecoration(labelText: 'Full name',
+                    prefixIcon: Icon(Icons.person_outline))),
                 const SizedBox(height: 12),
-                TextField(controller: email, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
+                TextField(controller: email, keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
                 const SizedBox(height: 12),
-                TextField(controller: phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone', prefixIcon: Icon(Icons.phone_outlined))),
+                TextField(controller: phone, keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(labelText: 'Phone', prefixIcon: Icon(Icons.phone_outlined))),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: gender,
                   decoration: const InputDecoration(labelText: 'Gender', prefixIcon: Icon(Icons.wc_outlined)),
-                  items: const [DropdownMenuItem(value: 'Male', child: Text('Male')), DropdownMenuItem(value: 'Female', child: Text('Female'))],
+                  items: const [DropdownMenuItem(value: 'Male', child: Text('Male')),
+                    DropdownMenuItem(value: 'Female', child: Text('Female'))],
                   onChanged: (v) => setState(() => gender = v ?? 'Male'),
                 ),
                 const SizedBox(height: 12),
-                TextField(controller: password, obscureText: true, decoration: const InputDecoration(labelText: 'Password (optional)', helperText: 'Leave empty to generate a secure temporary password.', prefixIcon: Icon(Icons.lock_outline))),
+                TextField(controller: password, obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Password (optional)',
+                        helperText: 'Leave empty to generate a secure temporary password.',
+                        prefixIcon: Icon(Icons.lock_outline))),
               ]),
             ),
           ),
@@ -255,7 +262,8 @@ class _ParentsScreenState extends ConsumerState<ParentsScreen> {
 
   void _show(String message, [bool error = false]) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: error ? Colors.red.shade700 : null));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message),
+        backgroundColor: error ? Colors.red.shade700 : null));
   }
 
   @override
@@ -265,9 +273,11 @@ class _ParentsScreenState extends ConsumerState<ParentsScreen> {
       backgroundColor: const Color(0xFFF6F8FC),
       appBar: AppBar(
         title: const Text('Parents', style: TextStyle(fontWeight: FontWeight.w800)),
-        actions: [IconButton(onPressed: () => ref.invalidate(parentProvider), tooltip: 'Refresh', icon: const Icon(Icons.refresh_rounded)), const SizedBox(width: 8)],
+        actions: [IconButton(onPressed: () => ref.invalidate(parentProvider),
+            tooltip: 'Refresh', icon: const Icon(Icons.refresh_rounded)), const SizedBox(width: 8)],
       ),
-      floatingActionButton: FloatingActionButton.extended(onPressed: _saving ? null : _addParent, icon: const Icon(Icons.person_add_alt_1_rounded), label: const Text('Add Parent')),
+      floatingActionButton: FloatingActionButton.extended(onPressed: _saving ? null : _addParent,
+          icon: const Icon(Icons.person_add_alt_1_rounded), label: const Text('Add Parent')),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _ErrorView(message: e.toString(), onRetry: () => ref.invalidate(parentProvider)),
@@ -289,7 +299,15 @@ class _ParentsScreenState extends ConsumerState<ParentsScreen> {
                 TextField(
                   controller: _searchController,
                   onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(hintText: 'Search parent by name, email or phone...', prefixIcon: const Icon(Icons.search_rounded), suffixIcon: _searchController.text.isEmpty ? null : IconButton(onPressed: () { _searchController.clear(); setState(() {}); }, icon: const Icon(Icons.clear_rounded)), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none)),
+                  decoration: InputDecoration(hintText: 'Search parent by name, email or phone...',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: _searchController.text.isEmpty ? null : IconButton(onPressed: ()
+                      { _searchController.clear(); setState(() {}
+                      );
+                        },
+                          icon: const Icon(Icons.clear_rounded)),
+                      filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none)),
                 ),
                 if (pending.isNotEmpty) ...[
                   const SizedBox(height: 20),
@@ -334,17 +352,30 @@ class _ParentsScreenState extends ConsumerState<ParentsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
-        leading: CircleAvatar(radius: 24, child: Text(name.isEmpty ? 'P' : name.substring(0, 1).toUpperCase())),
+        leading: CircleAvatar(radius: 24,
+            child: Text(name.isEmpty ? 'P' : name.substring(0, 1).toUpperCase())),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text('${parent['email'] ?? '-'}\n${parent['phone'] ?? '-'} • ${children.length} child${children.length == 1 ? '' : 'ren'}'),
-        trailing: PopupMenuButton<String>(onSelected: (value) { if (value == 'toggle') _toggleParent(parent); }, itemBuilder: (_) => [PopupMenuItem(value: 'toggle', child: Text(active ? 'Deactivate' : 'Activate'))]),
+        subtitle: Text('${parent['email'] ?? '-'}\n${parent['phone'] ?? '-'} • ${children.length}'
+            ' child${children.length == 1 ? '' : 'ren'}'),
+        trailing: PopupMenuButton<String>(onSelected: (value) { if (value == 'toggle') _toggleParent(parent);
+          }, itemBuilder: (_) => [PopupMenuItem(value: 'toggle',
+            child: Text(active ? 'Deactivate' : 'Activate'))]),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [const Text('Linked Children', style: TextStyle(fontWeight: FontWeight.w800)), const Spacer(), Chip(label: Text(active ? 'Active' : 'Inactive'))]),
+              Row(children: [const Text('Linked Children',
+                  style: TextStyle(fontWeight: FontWeight.w800)), const Spacer(),
+                Chip(label: Text(active ? 'Active' : 'Inactive'))]),
               const SizedBox(height: 8),
-              if (children.isEmpty) const Text('No student is linked to this parent email yet.', style: TextStyle(color: Colors.grey)) else ...children.map((child) => ListTile(dense: true, contentPadding: EdgeInsets.zero, leading: const Icon(Icons.school_outlined), title: Text(child['full_name']?.toString() ?? 'Student', style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text('${child['class_name'] ?? '-'}${child['section_name'] == null ? '' : ' • ${child['section_name']}'}'))),
+              if (children.isEmpty) const Text('No student is linked to this parent email yet.',
+                  style: TextStyle(color: Colors.grey))
+              else ...children.map((child) => ListTile(dense: true,
+                  contentPadding: EdgeInsets.zero, leading: const Icon(Icons.school_outlined),
+                  title: Text(child['full_name']?.toString() ?? 'Student',
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text('${child['class_name'] ?? '-'}${child['section_name'] == null ? '' : ' •'
+                      ' ${child['section_name']}'}'))),
             ]),
           ),
         ],
@@ -359,13 +390,34 @@ class _StatCard extends StatelessWidget {
   const _StatCard(this.title, this.value, this.icon);
 
   @override
-  Widget build(BuildContext context) => SizedBox(width: 220, child: Card(elevation: 0, child: Padding(padding: const EdgeInsets.all(18), child: Row(children: [Container(padding: const EdgeInsets.all(11), decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer, borderRadius: BorderRadius.circular(12)), child: Icon(icon)), const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)), const SizedBox(height: 4), Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900))])] )));
+  Widget build(BuildContext context) => SizedBox(width: 220, child: Card(elevation: 0,
+      child: Padding(padding: const EdgeInsets.all(18),
+          child: Row(children: [Container(padding: const EdgeInsets.all(11),
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12)), child: Icon(icon)),
+            const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 4),
+                  Text(value, style: const TextStyle(fontSize: 22,
+                      fontWeight: FontWeight.w900))])] ))));
+
 }
 
 class _EmptyParents extends StatelessWidget {
   const _EmptyParents();
   @override
-  Widget build(BuildContext context) => Card(elevation: 0, child: Padding(padding: const EdgeInsets.all(35), child: Column(children: [const Icon(Icons.family_restroom_outlined, size: 56), const SizedBox(height: 12), const Text('No parent accounts found', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)), const SizedBox(height: 6), const Text('Create a parent account or create a login from a pending student parent record.', textAlign: TextAlign.center)])));
+  Widget build(BuildContext context) => const Card(elevation: 0,
+      child: Padding(padding: EdgeInsets.all(35),
+          child: Column(children: [Icon(Icons.family_restroom_outlined, size: 56),
+            SizedBox(height: 12), Text('No parent accounts found',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            SizedBox(height: 6),
+            Text('Create a parent account or create a login from a pending student parent record.',
+                textAlign: TextAlign.center)
+          ]
+          )
+      )
+  );
 }
 
 class _ErrorView extends StatelessWidget {
@@ -373,5 +425,10 @@ class _ErrorView extends StatelessWidget {
   final VoidCallback onRetry;
   const _ErrorView({required this.message, required this.onRetry});
   @override
-  Widget build(BuildContext context) => Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.error_outline_rounded, size: 52), const SizedBox(height: 12), Text(message, textAlign: TextAlign.center), const SizedBox(height: 14), FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh_rounded), label: const Text('Try Again'))])));
+  Widget build(BuildContext context) => Center(child: Padding(padding: const EdgeInsets.all(24),
+      child: Column(mainAxisSize: MainAxisSize.min,
+          children: [const Icon(Icons.error_outline_rounded, size: 52), const SizedBox(height: 12),
+            Text(message, textAlign: TextAlign.center), const SizedBox(height: 14),
+            FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Try Again'))])));
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/supabase_client.dart';
 import '../../../../core/services/report_export_service.dart';
-import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/widgets/main_wrapper.dart';
 
 class ReportsScreen extends StatefulWidget {

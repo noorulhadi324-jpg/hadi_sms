@@ -149,7 +149,7 @@ class _GraderScreenState extends ConsumerState<GraderScreen> {
           SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(value: examId, decoration: const InputDecoration(labelText: 'Examination'), items: exams.map((e) => DropdownMenuItem(value: _id(e['id']), child: Text(e['title']?.toString() ?? 'Exam'))).toList(), onChanged: (v) => setState(() { examId = v; classId = null; examSubjectId = null; }))),
           SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(value: classId, decoration: const InputDecoration(labelText: 'Class / Section'), items: classes.where((c) => d['examClasses'].any((x) => _id(x['exam_id']) == examId && _id(x['class_id']) == _id(c['id']))).map((c) => DropdownMenuItem(value: _id(c['id']), child: Text('${c['name']} ${c['section_name'] ?? ''}'))).toList(), onChanged: (v) => setState(() { classId = v; examSubjectId = null; }))),
           SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(value: examSubjectId, decoration: const InputDecoration(labelText: 'Subject'), items: filteredSubjects.map((x) { final s = _find(subjects, _id(x['subject_id'])); return DropdownMenuItem(value: _id(x['id']), child: Text(s?['name']?.toString() ?? 'Subject')); }).toList(), onChanged: (v) => setState(() { examSubjectId = v; }))),
-        ])),
+        ]))),
         if (examSubjectId != null) ...[
           const SizedBox(height: 18),
           Card(child: Padding(padding: const EdgeInsets.all(16), child: Wrap(spacing: 24, runSpacing: 10, children: [Text('Total Marks: ${total.toStringAsFixed(0)}'), Text('Passing Marks: ${passing.toStringAsFixed(0)}'), Text('Students: ${students.length}')]))),

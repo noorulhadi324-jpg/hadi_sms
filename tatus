@@ -1,0 +1,261 @@
+[1mdiff --cc lib/features/result/presentation/screens/result_card_screen.dart[m
+[1mindex b0f9338,5f522ec..0000000[m
+[1m--- a/lib/features/result/presentation/screens/result_card_screen.dart[m
+[1m+++ b/lib/features/result/presentation/screens/result_card_screen.dart[m
+[36m@@@ -10,1137 -8,222 +10,1352 @@@[m [mimport '../../../../core/constants/app_[m
+  import '../../../../core/network/supabase_client.dart';[m
+  import '../../../../core/widgets/main_wrapper.dart';[m
+  [m
+[32m++<<<<<<< ours[m
+[32m +/// ===============================================================[m
+[32m +/// RESULT CARD - EXAMS[m
+[32m +/// ===============================================================[m
+[32m +[m
+[32m +final resultCardExamsProvider =[m
+[32m +FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {[m
+[32m +  final client = SupabaseConfig.client;[m
+[32m +[m
+[32m +  final schoolId = await ref.watch([m
+[32m +    schoolIdProvider.future,[m
+[32m +  );[m
+[32m +[m
+[32m +  if (schoolId == null) {[m
+[32m +    return [];[m
+[32m +  }[m
+[32m +[m
+[32m +  final response = await client[m
+[32m +      .from('exams')[m
+[32m +      .select('*')[m
+[32m +      .eq('school_id', schoolId)[m
+[32m +      .order([m
+[32m +    'exam_date',[m
+[32m +    ascending: false,[m
+[32m +  );[m
+[32m +[m
+[32m +  return List<Map<String, dynamic>>.from(response);[m
+[32m +});[m
+[32m +[m
+[32m +/// ===============================================================[m
+[32m +/// RESULT CARD - STUDENTS[m
+[32m +/// ===============================================================[m
+[32m +[m
+[32m +final resultCardStudentsProvider =[m
+[32m +FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {[m
+[32m +  final client = SupabaseConfig.client;[m
+[32m +[m
+[32m +  final schoolId = await ref.watch([m
+[32m +    schoolIdProvider.future,[m
+[32m +  );[m
+[32m +[m
+[32m +  if (schoolId == null) {[m
+[32m +    return [];[m
+[32m +  }[m
+[32m +[m
+[32m +  final response = await client[m
+[32m +      .from('students')[m
+[32m +      .select([m
+[32m +    'id,full_name,admission_number,class_name,section_name',[m
+[32m +  )[m
+[32m +      .eq([m
+[32m +    'school_id',[m
+[32m +    schoolId,[m
+[32m +  )[m
+[32m +      .eq([m
+[32m +    'is_active',[m
+[32m +    true,[m
+[32m +  )[m
+[32m +      .order([m
+[32m +    'full_name',[m
+[32m +  );[m
+[32m +[m
+[32m +  return List<Map<String, dynamic>>.from(response);[m
+[32m +});[m
+[32m +[m
+[32m +/// ===============================================================[m
+[32m +/// RESULT CARD DATA[m
+[32m +/// ===============================================================[m
+[32m +[m
+[32m +final resultCardDataProvider =[m
+[32m +FutureProvider.autoDispose.family<[m
+[32m +    Map<String, dynamic>,[m
+[32m +    String>((ref, key) async {[m
+[32m +  final parts = key.split(':');[m
+[32m +[m
+[32m +  if (parts.length != 2) {[m
+[32m +    throw Exception([m
+[32m +      'Invalid result card selection.',[m
+[32m +    );[m
+[32m +  }[m
+[32m +[m
+[32m +  final examId = int.tryParse(parts[0]);[m
+[32m +  final studentId = int.tryParse(parts[1]);[m
+[32m +[m
+[32m +  if (examId == null || studentId == null) {[m
+[32m +    throw Exception([m
+[32m +      'Invalid examination or student.',[m
+[32m +    );[m
+[32m +  }[m
+[32m +[m
+[32m +  final client = SupabaseConfig.client;[m
+[32m +[m
+[32m +  final schoolId = await ref.watch([m
+[32m +    schoolIdProvider.future,[m
+[32m +  );[m
+[32m +[m
+[32m +  if (schoolId == null) {[m
+[32m +    throw Exception([m
+[32m +      'School not linked.',[m
+[32m +    );[m
+[32m +  }[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// STUDENTS[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +[m
+[32m +  final studentsResponse = await client[m
+[32m +      .from('students')[m
+[32m +      .select('*')[m
+[32m +      .eq([m
+[32m +    'school_id',[m
+[32m +    schoolId,[m
+[32m +  );[m
+[32m +[m
+[32m +  final students =[m
+[32m +  List<Map<String, dynamic>>.from([m
+[32m +    studentsResponse,[m
+[32m +  );[m
+[32m +[m
+[32m +  Map<String, dynamic>? student;[m
+[32m +[m
+[32m +  for (final row in students) {[m
+[32m +    final id = _toInt(row['id']);[m
+[32m +[m
+[32m +    if (id == studentId) {[m
+[32m +      student = row;[m
+[32m +      break;[m
+[32m +    }[m
+[32m +  }[m
+[32m +[m
+[32m +  if (student == null) {[m
+[32m +    throw Exception([m
+[32m +      'Student record not found.',[m
+[32m +    );[m
+[32m +  }[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// EXAM[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +[m
+[32m +  final examResponse = await client[m
+[32m +      .from('exams')[m
+[32m +      .select('*')[m
+[32m +      .eq([m
+[32m +    'school_id',[m
+[32m +    schoolId,[m
+[32m +  )[m
+[32m +      .eq([m
+[32m +    'id',[m
+[32m +    examId,[m
+[32m +  );[m
+[32m +[m
+[32m +  final exams =[m
+[32m +  List<Map<String, dynamic>>.from([m
+[32m +    examResponse,[m
+[32m +  );[m
+[32m +[m
+[32m +  if (exams.isEmpty) {[m
+[32m +    throw Exception([m
+[32m +      'Examination not found.',[m
+[32m +    );[m
+[32m +  }[m
+[32m +[m
+[32m +  final exam = exams.first;[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// EXAM RESULTS[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +[m
+[32m +  final resultsResponse = await client[m
+[32m +      .from('exam_results')[m
+[32m +      .select('*')[m
+[32m +      .eq([m
+[32m +    'school_id',[m
+[32m +    schoolId,[m
+[32m +  )[m
+[32m +      .eq([m
+[32m +    'exam_id',[m
+[32m +    examId,[m
+[32m +  );[m
+[32m +[m
+[32m +  final results =[m
+[32m +  List<Map<String, dynamic>>.from([m
+[32m +    resultsResponse,[m
+[32m +  );[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// EXAM SUBJECTS[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +[m
+[32m +  final examSubjectsResponse = await client[m
+[32m +      .from('exam_subjects')[m
+[32m +      .select('*')[m
+[32m +      .eq([m
+[32m +    'school_id',[m
+[32m +    schoolId,[m
+[32m +  )[m
+[32m +      .eq([m
+[32m +    'exam_id',[m
+[32m +    examId,[m
+[32m +  );[m
+[32m +[m
+[32m +  final examSubjects =[m
+[32m +  List<Map<String, dynamic>>.from([m
+[32m +    examSubjectsResponse,[m
+[32m +  );[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// SUBJECTS[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +[m
+[32m +  final subjectsResponse = await client[m
+[32m +      .from('subjects')[m
+[32m +      .select('*')[m
+[32m +      .eq([m
+[32m +    'school_id',[m
+[32m +    schoolId,[m
+[32m +  );[m
+[32m +[m
+[32m +  final subjects =[m
+[32m +  List<Map<String, dynamic>>.from([m
+[32m +    subjectsResponse,[m
+[32m +  );[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// HELPER[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +[m
+[32m +  double obtainedMarks([m
+[32m +      Map<String, dynamic> result,[m
+[32m +      ) {[m
+[32m +    final value = result['obtained_marks'];[m
+[32m +[m
+[32m +    if (value is num) {[m
+[32m +      return value.toDouble();[m
+[32m +    }[m
+[32m +[m
+[32m +    return double.tryParse([m
+[32m +      value?.toString() ?? '',[m
+[32m +    ) ??[m
+[32m +        0;[m
+[32m +  }[m
+[32m +[m
+[32m +  int? studentIdFrom([m
+[32m +      Map<String, dynamic> row,[m
+[32m +      ) {[m
+[32m +    return _toInt([m
+[32m +      row['student_id'],[m
+[32m +    );[m
+[32m +  }[m
+[32m +[m
+[32m +  /// -------------------------------------------------------------[m
+[32m +  /// STUDENT RESULTS[m
