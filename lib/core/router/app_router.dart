@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/splash/presentation/screens/session_router_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
@@ -41,12 +42,13 @@ class AppRouter {
   AppRouter._();
 
   static final router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/session-router',
     refreshListenable: AuthStateNotifier.instance,
     redirect: (BuildContext context, GoRouterState state) {
       return AuthGuard.redirect(state);
     },
     routes: [
+      GoRoute(path: '/session-router', builder: (_, __) => const SessionRouterScreen()),
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/teacher-login', builder: (_, __) => const LoginScreen(expectedRole: 'teacher')),
