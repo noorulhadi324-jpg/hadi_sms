@@ -5,17 +5,39 @@ import '../../network/supabase_client.dart';
 class AuthGuard {
   AuthGuard._();
 
+  static const Set<String> _publicRoutes = {
+    '/session-router',
+    '/login',
+    '/teacher-login',
+    '/parent-login',
+    '/forgot-password',
+    '/register-school',
+  };
+
+  // Routes a teacher is allowed to open.
+  static const Set<String> _teacherRoutes = {
+    '/teacher-dashboard',
+    '/attendance',
+    '/assignment',
+    '/examination',
+    '/result',
+    '/profile',
+  };
+
+  // Routes a parent is allowed to open.
+  static const Set<String> _parentRoutes = {
+    '/parent-dashboard',
+    '/attendance',
+    '/assignment',
+    '/examination',
+    '/result',
+    '/finance',
+    '/profile',
+  };
+
   static Future<String?> redirect(GoRouterState state) async {
     final location = state.uri.path;
     final auth = AuthStateNotifier.instance;
-    const publicRoutes = {
-      '/session-router',
-      '/login',
-      '/teacher-login',
-      '/parent-login',
-      '/forgot-password',
-      '/register-school',
-    };
 
     if (auth.isRecovering && location != '/reset-password') {
       return '/reset-password';
@@ -25,44 +47,43 @@ class AuthGuard {
       return auth.session == null ? '/login' : null;
     }
 
-    if (location == '/splash' || location == '/session-router') return null;
+    if (location == '/splash' || _publicRoutes.contains(location)) {
+      if (auth.session == null) return null;
 
-    if (auth.session == null && !publicRoutes.contains(location)) {
+      // Keep role-specific login pages usable after logout, but if a user is
+      // already signed in, send them to their correct portal.
+      if (location == '/teacher-login' || location == '/parent-login') {
+        return null;
+      }
+
+      return await _portalForCurrentUser();
+    }
+
+    if (auth.session == null) {
       return '/login';
     }
 
-    if (auth.session == null) return null;
+    final role = await _currentRole();
+    if (role == null) return '/login';
 
-    final isLoginRoute = publicRoutes.contains(location);
-    if (isLoginRoute) {
-      if (location == '/teacher-login' || location == '/parent-login') {
-        // Role-specific login pages remain available after logout.
-      } else if (location != '/session-router') {
-        return await _portalForCurrentUser();
-      }
+    // Hard route-level role protection. RLS remains the database-level
+    // protection; this prevents users from even opening unrelated screens.
+    if (role == 'teacher') {
+      if (_teacherRoutes.contains(location)) return null;
+      return '/teacher-dashboard';
     }
 
-    if (location == '/teacher-dashboard') {
-      return await _roleRedirect('teacher');
+    if (role == 'parent') {
+      if (_parentRoutes.contains(location)) return null;
+      return '/parent-dashboard';
     }
 
-    if (location == '/parent-dashboard') {
-      return await _roleRedirect('parent');
-    }
-
-    if (location == '/dashboard') {
-      final role = await _currentRole();
-      if (role == 'parent') return '/parent-dashboard';
-      if (role == 'teacher') return '/teacher-dashboard';
+    // Principal/staff/admin accounts use the existing administration portal.
+    if (location == '/teacher-dashboard' || location == '/parent-dashboard') {
+      return '/dashboard';
     }
 
     return null;
-  }
-
-  static Future<String?> _roleRedirect(String requiredRole) async {
-    final role = await _currentRole();
-    if (role == requiredRole) return null;
-    return _portalForRole(role);
   }
 
   static Future<String?> _portalForCurrentUser() async {
@@ -91,7 +112,9 @@ class AuthGuard {
           .eq('id', session.user.id)
           .maybeSingle();
 
-      if (profile == null || profile['is_active'] == false || profile['school_id'] == null) {
+      if (profile == null ||
+          profile['is_active'] == false ||
+          profile['school_id'] == null) {
         await SupabaseConfig.client.auth.signOut();
         return null;
       }
