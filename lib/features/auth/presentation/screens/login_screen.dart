@@ -4,10 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/supabase_client.dart';
+import '../../../../core/widgets/hadi_design_system.dart';
 import '../../data/repositories/auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? expectedRole;
+
   const LoginScreen({super.key, this.expectedRole});
 
   @override
@@ -19,12 +21,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _repo = AuthRepository();
+
   bool _loading = false;
   bool _obscurePassword = true;
 
   bool get _isTeacher => widget.expectedRole == 'teacher';
   bool get _isParent => widget.expectedRole == 'parent';
   bool get _isStaff => widget.expectedRole == 'staff';
+
+  Color get _portalColor {
+    if (_isParent) return AppColors.roleParent;
+    if (_isTeacher) return AppColors.roleTeacher;
+    if (_isStaff) return AppColors.roleAdmin;
+    return AppColors.primary;
+  }
+
+  IconData get _portalIcon {
+    if (_isParent) return Icons.family_restroom_rounded;
+    if (_isTeacher) return Icons.cast_for_education_rounded;
+    if (_isStaff) return Icons.badge_rounded;
+    return Icons.admin_panel_settings_rounded;
+  }
 
   String get _portalTitle {
     if (_isTeacher) return 'Teacher Portal';
@@ -34,10 +51,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String get _portalSubtitle {
-    if (_isTeacher) return 'Sign in to manage your classes, attendance and assignments.';
-    if (_isParent) return 'Sign in to view your children, attendance, fees and results.';
-    if (_isStaff) return 'Sign in to access the school staff portal.';
-    return 'Sign in to manage your school and access the administration dashboard.';
+    if (_isTeacher) return 'Manage classes, attendance and assignments from one place.';
+    if (_isParent) return 'Follow your children’s attendance, fees, results and updates.';
+    if (_isStaff) return 'Access the tools and workflows assigned to your staff role.';
+    return 'Run your school operations with one connected management system.';
   }
 
   @override
@@ -48,7 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate() || _loading) return;
+
     setState(() => _loading = true);
     try {
       await _repo.login(
@@ -56,25 +75,35 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
         expectedRole: widget.expectedRole,
       );
+
       final user = SupabaseConfig.client.auth.currentUser;
       final profile = user == null
           ? null
-          : await SupabaseConfig.client.from('profiles').select('role').eq('id', user.id).maybeSingle();
+          : await SupabaseConfig.client
+              .from('profiles')
+              .select('role')
+              .eq('id', user.id)
+              .maybeSingle();
+
       if (!mounted) return;
-      final role = profile?['role']?.toString().toLowerCase();
-      if (role == 'parent') {
-        context.go('/parent-dashboard');
-      } else if (role == 'teacher') {
-        context.go('/teacher-dashboard');
-      } else if (role == 'staff') {
-        context.go('/staff-dashboard');
-      } else {
-        context.go('/dashboard');
+      final role = profile?['role']?.toString().trim().toLowerCase();
+      switch (role) {
+        case 'parent':
+          context.go('/parent-dashboard');
+          break;
+        case 'teacher':
+          context.go('/teacher-dashboard');
+          break;
+        case 'staff':
+          context.go('/staff-dashboard');
+          break;
+        default:
+          context.go('/dashboard');
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyError(e)), backgroundColor: AppColors.error, behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(_friendlyError(e)), backgroundColor: AppColors.error),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -94,86 +123,180 @@ class _LoginScreenState extends State<LoginScreen> {
     return 'Authentication failed. Please try again.';
   }
 
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return 'Email address is required.';
+    final valid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
+    return valid ? null : 'Enter a valid email address.';
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final portalColor = _isParent
-        ? const Color(0xFF0F766E)
-        : _isTeacher
-            ? const Color(0xFF2563EB)
-            : _isStaff
-                ? const Color(0xFF7C3AED)
-                : AppColors.primary;
+    final compact = width < 720;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Row(
-        children: [
-          if (width > 900)
-            Expanded(
-              flex: 5,
-              child: Container(
-                decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [portalColor, AppColors.primary])),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(64),
-                    child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Icon(_isParent ? Icons.family_restroom_rounded : _isTeacher ? Icons.cast_for_education_rounded : _isStaff ? Icons.badge_rounded : Icons.school_rounded, color: Colors.white, size: 56),
-                      const SizedBox(height: 28),
-                      Text('HADI SMS', style: GoogleFonts.inter(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900)),
-                      const SizedBox(height: 10),
-                      Text(_portalTitle.toUpperCase(), style: GoogleFonts.inter(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 2)),
-                      const SizedBox(height: 16),
-                      Text(_portalSubtitle, style: GoogleFonts.inter(color: Colors.white.withOpacity(.82), fontSize: 18, height: 1.6)),
-                    ]),
-                  ),
-                ),
-              ),
-            ),
-          Expanded(
-            flex: 4,
-            child: Container(
-              color: AppColors.background,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(40),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(_portalTitle, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
-                        const SizedBox(height: 8),
-                        Text(_portalSubtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),
-                        const SizedBox(height: 36),
-                        const Text('Email Address', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                        const SizedBox(height: 8),
-                        TextFormField(controller: _emailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(hintText: 'name@school.com', prefixIcon: Icon(Icons.email_outlined)), validator: (v) => v == null || !v.contains('@') ? 'Enter a valid email' : null),
-                        const SizedBox(height: 20),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          const Text('Password', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                          TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Forgot Password?')),
-                        ]),
-                        TextFormField(controller: _passwordController, obscureText: _obscurePassword, decoration: InputDecoration(hintText: '••••••••', prefixIcon: const Icon(Icons.lock_outline), suffixIcon: IconButton(onPressed: () => setState(() => _obscurePassword = !_obscurePassword), icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined))), validator: (v) => v == null || v.length < 6 ? 'Minimum 6 characters' : null),
-                        const SizedBox(height: 32),
-                        SizedBox(width: double.infinity, child: FilledButton(onPressed: _loading ? null : _handleLogin, style: FilledButton.styleFrom(backgroundColor: portalColor, padding: const EdgeInsets.symmetric(vertical: 17)), child: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(_isParent ? 'Open Parent Portal' : _isTeacher ? 'Open Teacher Portal' : _isStaff ? 'Open Staff Portal' : 'Access Admin Dashboard'))),
-                        const SizedBox(height: 20),
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        Center(child: Wrap(alignment: WrapAlignment.center, spacing: 4, children: [
-                          if (!_isTeacher) TextButton.icon(onPressed: () => context.go('/teacher-login'), icon: const Icon(Icons.cast_for_education_rounded, size: 17), label: const Text('Teacher')),
-                          if (!_isParent) TextButton.icon(onPressed: () => context.go('/parent-login'), icon: const Icon(Icons.family_restroom_rounded, size: 17), label: const Text('Parent')),
-                          if (!_isStaff) TextButton.icon(onPressed: () => context.go('/staff-login'), icon: const Icon(Icons.badge_rounded, size: 17), label: const Text('Staff')),
-                          if (_isTeacher || _isParent || _isStaff) TextButton.icon(onPressed: () => context.go('/login'), icon: const Icon(Icons.admin_panel_settings_outlined, size: 17), label: const Text('Admin')),
-                        ])),
-                      ]),
-                    ),
-                  ),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(compact ? 18 : 28),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1120),
+              child: HadiGlassCard(
+                padding: EdgeInsets.zero,
+                child: IntrinsicHeight(
+                  child: compact
+                      ? _buildForm(context, compact: true)
+                      : Row(
+                          children: [
+                            Expanded(child: _buildHero(context)),
+                            Expanded(flex: 5, child: _buildForm(context)),
+                          ],
+                        ),
                 ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHero(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(52),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.horizontal(left: Radius.circular(22)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_portalColor, AppColors.primaryDark],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          HadiBrandLogo(size: 58),
+          const SizedBox(height: 30),
+          Icon(_portalIcon, color: Colors.white.withValues(alpha: .95), size: 42),
+          const SizedBox(height: 22),
+          Text(
+            'HADI SMS',
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1.6),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _portalTitle.toUpperCase(),
+            style: GoogleFonts.inter(color: Colors.white.withValues(alpha: .9), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.1),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            _portalSubtitle,
+            style: GoogleFonts.inter(color: Colors.white.withValues(alpha: .82), fontSize: 16, height: 1.55),
+          ),
+          const SizedBox(height: 28),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              HadiStatusBadge(label: 'Secure Access', color: Colors.white),
+              HadiStatusBadge(label: 'Cloud Connected', color: Colors.white),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildForm(BuildContext context, {bool compact = false}) {
+    return Padding(
+      padding: EdgeInsets.all(compact ? 24 : 48),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            HadiBrandLogo(size: 46, showWordmark: true),
+            const SizedBox(height: 28),
+            Text(_portalTitle, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: -.7)),
+            const SizedBox(height: 7),
+            Text(_portalSubtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5)),
+            const SizedBox(height: 30),
+            const Text('Email Address', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.username, AutofillHints.email],
+              decoration: const InputDecoration(hintText: 'name@school.com', prefixIcon: Icon(Icons.alternate_email_rounded)),
+              validator: _validateEmail,
+            ),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Password', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Forgot password?')),
+              ],
+            ),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.password],
+              onFieldSubmitted: (_) => _handleLogin(),
+              decoration: InputDecoration(
+                hintText: 'Enter your password',
+                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                suffixIcon: IconButton(
+                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                ),
+              ),
+              validator: (v) => (v == null || v.length < 6) ? 'Minimum 6 characters.' : null,
+            ),
+            const SizedBox(height: 26),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _loading ? null : _handleLogin,
+                icon: _loading
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Icon(_portalIcon, size: 18),
+                label: Text(_loading ? 'Signing in…' : 'Continue to portal'),
+                style: FilledButton.styleFrom(backgroundColor: _portalColor),
+              ),
+            ),
+            const SizedBox(height: 22),
+            const Divider(),
+            const SizedBox(height: 10),
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 2,
+                children: [
+                  if (!_isTeacher) TextButton(onPressed: () => context.go('/teacher-login'), child: const Text('Teacher')),
+                  if (!_isParent) TextButton(onPressed: () => context.go('/parent-login'), child: const Text('Parent')),
+                  if (!_isStaff) TextButton(onPressed: () => context.go('/staff-login'), child: const Text('Staff')),
+                  if (_isTeacher || _isParent || _isStaff) TextButton(onPressed: () => context.go('/login'), child: const Text('Admin')),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => context.push('/register-school'),
+                icon: const Icon(Icons.add_business_rounded, size: 17),
+                label: const Text('Register a new school'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
