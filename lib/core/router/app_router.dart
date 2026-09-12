@@ -34,6 +34,7 @@ import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/result/presentation/screens/result_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/staff/presentation/screens/staff_screen.dart';
+import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
 import '../../features/transport/presentation/screens/transport_screen.dart';
 import 'guards/auth_guard.dart';
 import '../auth/auth_state_notifier.dart';
@@ -44,21 +45,21 @@ class AppRouter {
   static final router = GoRouter(
     initialLocation: '/session-router',
     refreshListenable: AuthStateNotifier.instance,
-    redirect: (BuildContext context, GoRouterState state) {
-      return AuthGuard.redirect(state);
-    },
+    redirect: (BuildContext context, GoRouterState state) => AuthGuard.redirect(state),
     routes: [
       GoRoute(path: '/session-router', builder: (_, __) => const SessionRouterScreen()),
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/teacher-login', builder: (_, __) => const LoginScreen(expectedRole: 'teacher')),
       GoRoute(path: '/parent-login', builder: (_, __) => const LoginScreen(expectedRole: 'parent')),
+      GoRoute(path: '/staff-login', builder: (_, __) => const LoginScreen(expectedRole: 'staff')),
       GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/reset-password', builder: (_, __) => const ResetPasswordScreen()),
       GoRoute(path: '/register-school', builder: (_, __) => const SchoolRegistrationScreen()),
       GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
       GoRoute(path: '/teacher-dashboard', builder: (_, __) => const TeacherDashboardScreen()),
       GoRoute(path: '/parent-dashboard', builder: (_, __) => const ParentDashboardScreen()),
+      GoRoute(path: '/staff-dashboard', builder: (_, __) => const StaffDashboardScreen()),
       GoRoute(path: '/academic', builder: (_, __) => const AcademicScreen()),
       GoRoute(path: '/student', builder: (_, __) => const ClassesScreen()),
       GoRoute(path: '/teacher', builder: (_, __) => const TeacherScreen()),
