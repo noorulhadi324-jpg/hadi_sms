@@ -1,0 +1,2 @@
+// Placeholder
+abstract class AuthRepository {}
