@@ -1,813 +1,113 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/report_export_service.dart';
+import '../../../../core/supabase/supabase_config.dart';
 import '../../../../core/widgets/main_wrapper.dart';
 
-class FeesScreen extends StatelessWidget {
+class FeesScreen extends StatefulWidget {
   const FeesScreen({super.key});
+  @override
+  State<FeesScreen> createState() => _FeesScreenState();
+}
+
+class _FeesScreenState extends State<FeesScreen> {
+  final _client = SupabaseConfig.client;
+  final _amountController = TextEditingController();
+  bool _loading = true;
+  bool _working = false;
+  int? _schoolId;
+  String _schoolName = 'HADI SMS';
+  List<Map<String, dynamic>> _fees = [];
+  List<Map<String, dynamic>> _students = [];
 
   @override
-  Widget build(BuildContext context) {
-    return MainWrapper(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 800;
+  void initState() { super.initState(); _load(); }
+  @override
+  void dispose() { _amountController.dispose(); super.dispose(); }
 
-          return RefreshIndicator(
-            onRefresh: () async {},
-            child: ListView(
-              physics:
-              const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(
-                wide ? 24 : 16,
-                20,
-                wide ? 24 : 16,
-                32,
-              ),
-              children: [
-                _buildHeader(context, wide),
-
-                const SizedBox(height: 24),
-
-                _buildOverview(),
-
-                const SizedBox(height: 24),
-
-                _buildActions(context, wide),
-
-                const SizedBox(height: 24),
-
-                _buildFeeManagement(context),
-
-                const SizedBox(height: 24),
-
-                _buildRecentActivity(),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final uid = _client.auth.currentUser?.id;
+      if (uid == null) throw Exception('Please login again.');
+      final profile = await _client.from('profiles').select('school_id').eq('id', uid).maybeSingle();
+      _schoolId = (profile?['school_id'] as num?)?.toInt();
+      if (_schoolId == null) throw Exception('School profile is not linked.');
+      final school = await _client.from('schools').select('school_name').eq('id', _schoolId!).maybeSingle();
+      _schoolName = (school?['school_name'] as String?) ?? 'HADI SMS';
+      final data = await Future.wait([
+        _client.from('student_fees').select('id,student_id,fee_category_id,amount,due_date,status,fee_month').eq('school_id', _schoolId!).order('fee_month', ascending: false),
+        _client.from('students').select('id,full_name,admission_number,class_name,section_name').eq('school_id', _schoolId!).order('full_name'),
+      ]);
+      if (!mounted) return;
+      setState(() { _fees = List<Map<String,dynamic>>.from(data[0] as List); _students = List<Map<String,dynamic>>.from(data[1] as List); _loading = false; });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      _message(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
-  Widget _buildHeader(
-      BuildContext context,
-      bool wide,
-      ) {
-    return Row(
-      children: [
-       const Expanded(
-          child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Fees & Finance',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Manage fee structures, payments and collections.',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ),
+  String _studentName(dynamic id) {
+    for (final s in _students) { if ('${s['id']}' == '$id') return '${s['full_name'] ?? 'Student'}'; }
+    return 'Student #$id';
+  }
+  double _num(dynamic v) => v is num ? v.toDouble() : double.tryParse('$v') ?? 0;
 
-        if (wide)
-          FilledButton.icon(
-            onPressed: () {
-              _showComingSoon(
-                context,
-                'Fee payment',
-              );
-            },
-            icon: const Icon(
-              Icons.add_rounded,
-            ),
-            label: const Text(
-              'Collect Fee',
-            ),
-          ),
-      ],
-    );
+  Future<void> _generateCurrentMonth() async {
+    if (_working) return;
+    setState(() => _working = true);
+    try {
+      final month = DateTime(DateTime.now().year, DateTime.now().month, 1).toIso8601String().substring(0, 10);
+      final result = await _client.rpc('generate_monthly_student_fees', params: {'p_fee_month': month});
+      await _load();
+      _message('$result نئے fee records تیار کیے گئے۔');
+    } catch (e) { _message('Fee generation failed: $e'); }
+    finally { if (mounted) setState(() => _working = false); }
   }
 
-  Widget _buildOverview() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final count =
-        constraints.maxWidth >= 900
-            ? 4
-            : constraints.maxWidth >= 550
-            ? 2
-            : 1;
-
-        final cards = [
-          const _FeeStat(
-            title: 'Total Collection',
-            value: '--',
-            subtitle: 'No finance data connected',
-            icon: Icons
-                .account_balance_wallet_rounded,
-            color: AppColors.primary,
-          ),
-         const _FeeStat(
-            title: 'Pending Fees',
-            value: '--',
-            subtitle: 'No finance data connected',
-            icon: Icons.schedule_rounded,
-            color: AppColors.warning,
-          ),
-          const _FeeStat(
-            title: 'Paid Students',
-            value: '--',
-            subtitle: 'Waiting for fee data',
-            icon: Icons
-                .check_circle_outline_rounded,
-            color: AppColors.success,
-          ),
-          const _FeeStat(
-            title: 'Fee Records',
-            value: '--',
-            subtitle: 'Waiting for fee data',
-            icon: Icons.receipt_long_rounded,
-            color: AppColors.info,
-          ),
-        ];
-
-        if (count == 1) {
-          return Column(
-            children: cards
-                .map(
-                  (card) => Padding(
-                padding:
-                const EdgeInsets.only(
-                  bottom: 12,
-                ),
-                child: _buildStatCard(
-                  card,
-                ),
-              ),
-            )
-                .toList(),
-          );
-        }
-
-        return GridView.builder(
-          shrinkWrap: true,
-          physics:
-          const NeverScrollableScrollPhysics(),
-          itemCount: cards.length,
-          gridDelegate:
-          SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: count,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio:
-            constraints.maxWidth >= 900
-                ? 1.55
-                : 2.1,
-          ),
-          itemBuilder: (_, index) {
-            return _buildStatCard(
-              cards[index],
-            );
-          },
-        );
-      },
-    );
+  Future<void> _collectPayment(Map<String,dynamic> fee) async {
+    _amountController.text = '${fee['amount'] ?? ''}';
+    final amount = await showDialog<double>(context: context, builder: (context) => AlertDialog(
+      title: Text('Collect Fee — ${_studentName(fee['student_id'])}'),
+      content: TextField(controller: _amountController, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Payment amount', prefixText: 'Rs. ')),
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.pop(context, double.tryParse(_amountController.text.trim())), child: const Text('Continue'))],
+    ));
+    if (amount == null || amount <= 0) return;
+    try {
+      setState(() => _working = true);
+      final result = await _client.rpc('record_fee_payment', params: {'p_student_fee_id': fee['id'], 'p_amount': amount, 'p_payment_method': 'cash', 'p_notes': null});
+      await _load();
+      final receipt = result is List && result.isNotEmpty ? result.first['receipt_number'] : 'generated';
+      _message('Payment recorded. Receipt: $receipt');
+    } catch (e) { _message('Payment failed: $e'); }
+    finally { if (mounted) setState(() => _working = false); }
   }
 
-  Widget _buildStatCard(
-      _FeeStat stat,
-      ) {
-    return Card(
-      child: Padding(
-        padding:
-        const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration:
-              BoxDecoration(
-                color:
-                stat.color.withValues(
-                  alpha: .10,
-                ),
-                borderRadius:
-                BorderRadius.circular(
-                  14,
-                ),
-              ),
-              child: Icon(
-                stat.icon,
-                color: stat.color,
-                size: 24,
-              ),
-            ),
-            const SizedBox(
-              width: 14,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    stat.title,
-                    style:
-                    const TextStyle(
-                      color:
-                      AppColors
-                          .textSecondary,
-                      fontSize: 12,
-                      fontWeight:
-                      FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 4,
-                  ),
-                  Text(
-                    stat.value,
-                    style:
-                    const TextStyle(
-                      fontSize: 22,
-                      fontWeight:
-                      FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 2,
-                  ),
-                  Text(
-                    stat.subtitle,
-                    maxLines: 1,
-                    overflow:
-                    TextOverflow.ellipsis,
-                    style:
-                    const TextStyle(
-                      color:
-                      AppColors
-                          .textSecondary,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<void> _export() async {
+    try {
+      final file = await ReportExportService.exportExcel(title: 'Fee Register', headers: const ['Student','Fee Month','Due Date','Amount','Status'], rows: _fees.map((f) => [_studentName(f['student_id']), '${f['fee_month'] ?? ''}', '${f['due_date'] ?? ''}', '${f['amount'] ?? 0}', '${f['status'] ?? ''}']).toList(), schoolName: _schoolName);
+      await ReportExportService.shareFile(file, subject: 'Fee Register');
+    } catch (e) { _message('Export failed: $e'); }
   }
 
-  Widget _buildActions(
-      BuildContext context,
-      bool wide,
-      ) {
-    return Card(
-      child: Padding(
-        padding:
-        const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Fee Management',
-              style:
-              TextStyle(
-                fontSize: 17,
-                fontWeight:
-                FontWeight.w800,
-              ),
-            ),
+  void _message(String text) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text))); }
 
-            const SizedBox(
-              height: 6,
-            ),
+  @override
+  Widget build(BuildContext context) => MainWrapper(child: RefreshIndicator(onRefresh: _load, child: ListView(physics: const AlwaysScrollableScrollPhysics(), padding: const EdgeInsets.fromLTRB(16,20,16,32), children: [
+    Row(children: [const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Fees & Finance', style: TextStyle(fontSize:25,fontWeight:FontWeight.w900)), SizedBox(height:4), Text('Live fees, automatic monthly generation, payments and receipts.', style: TextStyle(color:AppColors.textSecondary,fontSize:13))])), if (_working) const SizedBox(width:24,height:24,child:CircularProgressIndicator(strokeWidth:2))]),
+    const SizedBox(height:18),
+    Wrap(spacing:8,runSpacing:8,children: [FilledButton.icon(onPressed:_working?null:_generateCurrentMonth,icon:const Icon(Icons.auto_awesome_rounded),label:const Text('Generate Current Month')), OutlinedButton.icon(onPressed:_working?null:_export,icon:const Icon(Icons.table_view_rounded),label:const Text('Export Excel'))]),
+    const SizedBox(height:18),
+    if (_loading) const Center(child:Padding(padding:EdgeInsets.all(40),child:CircularProgressIndicator())) else ...[_stats(),const SizedBox(height:18),_list()],
+  ])));
 
-            const Text(
-              'Choose an action to manage school fees.',
-              style:
-              TextStyle(
-                color:
-                AppColors
-                    .textSecondary,
-                fontSize: 12,
-              ),
-            ),
-
-            const SizedBox(
-              height: 18,
-            ),
-
-            LayoutBuilder(
-              builder:
-                  (context, constraints) {
-                final columns =
-                constraints.maxWidth >
-                    700
-                    ? 4
-                    : constraints
-                    .maxWidth >
-                    400
-                    ? 2
-                    : 1;
-
-                final actions = [
-                  _FeeAction(
-                    title:
-                    'Fee Categories',
-                    subtitle:
-                    'Create fee types',
-                    icon:
-                    Icons.category_outlined,
-                    color:
-                    AppColors.primary,
-                    onTap: () {
-                      _showComingSoon(
-                        context,
-                        'Fee Categories',
-                      );
-                    },
-                  ),
-                  _FeeAction(
-                    title:
-                    'Fee Structure',
-                    subtitle:
-                    'Set student fees',
-                    icon:
-                    Icons
-                        .account_tree_outlined,
-                    color:
-                    AppColors.info,
-                    onTap: () {
-                      _showComingSoon(
-                        context,
-                        'Fee Structure',
-                      );
-                    },
-                  ),
-                  _FeeAction(
-                    title:
-                    'Collect Payment',
-                    subtitle:
-                    'Record a payment',
-                    icon:
-                    Icons
-                        .payments_outlined,
-                    color:
-                    AppColors.success,
-                    onTap: () {
-                      _showComingSoon(
-                        context,
-                        'Collect Payment',
-                      );
-                    },
-                  ),
-                  _FeeAction(
-                    title:
-                    'Receipts',
-                    subtitle:
-                    'View fee receipts',
-                    icon:
-                    Icons
-                        .receipt_long_outlined,
-                    color:
-                    AppColors.warning,
-                    onTap: () {
-                      _showComingSoon(
-                        context,
-                        'Fee Receipts',
-                      );
-                    },
-                  ),
-                ];
-
-                if (columns == 1) {
-                  return Column(
-                    children: actions
-                        .map(
-                          (action) =>
-                          Padding(
-                            padding:
-                            const EdgeInsets
-                                .only(
-                              bottom: 10,
-                            ),
-                            child:
-                            _buildActionTile(
-                              action,
-                            ),
-                          ),
-                    )
-                        .toList(),
-                  );
-                }
-
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics:
-                  const NeverScrollableScrollPhysics(),
-                  itemCount:
-                  actions.length,
-                  gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:
-                    columns,
-                    crossAxisSpacing:
-                    10,
-                    mainAxisSpacing:
-                    10,
-                    childAspectRatio:
-                    columns == 4
-                        ? 1.7
-                        : 1.8,
-                  ),
-                  itemBuilder:
-                      (_, index) {
-                    return _buildActionTile(
-                      actions[index],
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _stats() {
+    final total = _fees.fold<double>(0,(s,f)=>s+_num(f['amount']));
+    final paid = _fees.where((f)=>'${f['status']}'.toLowerCase()=='paid').fold<double>(0,(s,f)=>s+_num(f['amount']));
+    return LayoutBuilder(builder:(context,c){ final n=c.maxWidth>=900?4:c.maxWidth>=560?2:1; final cards=[_stat('Records','${_fees.length}',Icons.receipt_long_rounded),_stat('Assigned','Rs. ${total.toStringAsFixed(0)}',Icons.account_balance_wallet_rounded),_stat('Collected','Rs. ${paid.toStringAsFixed(0)}',Icons.check_circle_rounded),_stat('Pending','Rs. ${(total-paid).toStringAsFixed(0)}',Icons.pending_actions_rounded)]; if(n==1)return Column(children:cards.map((x)=>Padding(padding:const EdgeInsets.only(bottom:10),child:x)).toList()); return GridView.count(crossAxisCount:n,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2.5,children:cards); });
   }
-
-  Widget _buildActionTile(
-      _FeeAction action,
-      ) {
-    return InkWell(
-      onTap: action.onTap,
-      borderRadius:
-      BorderRadius.circular(
-        14,
-      ),
-      child: Container(
-        padding:
-        const EdgeInsets.all(
-          16,
-        ),
-        decoration:
-        BoxDecoration(
-          color:
-          action.color.withValues(
-            alpha: .06,
-          ),
-          borderRadius:
-          BorderRadius.circular(
-            14,
-          ),
-          border:
-          Border.all(
-            color:
-            action.color.withValues(
-              alpha: .15,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration:
-              BoxDecoration(
-                color:
-                action.color
-                    .withValues(
-                  alpha: .12,
-                ),
-                borderRadius:
-                BorderRadius.circular(
-                  12,
-                ),
-              ),
-              child: Icon(
-                action.icon,
-                color:
-                action.color,
-                size: 21,
-              ),
-            ),
-
-            const SizedBox(
-              width: 12,
-            ),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
-                children: [
-                  Text(
-                    action.title,
-                    maxLines: 1,
-                    overflow:
-                    TextOverflow.ellipsis,
-                    style:
-                    const TextStyle(
-                      fontWeight:
-                      FontWeight.w800,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 3,
-                  ),
-                  Text(
-                    action.subtitle,
-                    maxLines: 1,
-                    overflow:
-                    TextOverflow.ellipsis,
-                    style:
-                    const TextStyle(
-                      color:
-                      AppColors
-                          .textSecondary,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeeManagement(
-      BuildContext context,
-      ) {
-    return Card(
-      child: Padding(
-        padding:
-        const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
-                    children: [
-                      Text(
-                        'Student Fee Records',
-                        style:
-                        TextStyle(
-                          fontSize: 17,
-                          fontWeight:
-                          FontWeight
-                              .w800,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 4,
-                      ),
-                      Text(
-                        'Search and manage student fee records.',
-                        style:
-                        TextStyle(
-                          color:
-                          AppColors
-                              .textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                OutlinedButton.icon(
-                  onPressed: () {
-                    _showComingSoon(
-                      context,
-                      'Student Fee Records',
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.search_rounded,
-                    size: 18,
-                  ),
-                  label:
-                  const Text(
-                    'Search',
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(
-              height: 20,
-            ),
-
-            Container(
-              width:
-              double.infinity,
-              padding:
-              const EdgeInsets.symmetric(
-                vertical: 36,
-                horizontal: 20,
-              ),
-              decoration:
-              BoxDecoration(
-                color:
-                AppColors.background,
-                borderRadius:
-                BorderRadius.circular(
-                  14,
-                ),
-                border:
-                Border.all(
-                  color:
-                  AppColors.border,
-                ),
-              ),
-              child: const Column(
-                children: [
-                  Icon(
-                    Icons
-                        .receipt_long_outlined,
-                    size: 42,
-                    color:
-                    AppColors.textMuted,
-                  ),
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Text(
-                    'No fee records loaded',
-                    style:
-                    TextStyle(
-                      fontWeight:
-                      FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Text(
-                    'Connect the fee tables to display real student payments here.',
-                    textAlign:
-                    TextAlign.center,
-                    style:
-                    TextStyle(
-                      color:
-                      AppColors
-                          .textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentActivity() {
-    return Card(
-      child: Padding(
-        padding:
-        const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Recent Fee Activity',
-                    style:
-                    TextStyle(
-                      fontSize: 17,
-                      fontWeight:
-                      FontWeight.w800,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child:
-                  const Text(
-                    'View All',
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(
-              height: 16,
-            ),
-
-            Container(
-              width:
-              double.infinity,
-              padding:
-              const EdgeInsets.symmetric(
-                vertical: 30,
-              ),
-              child: const Column(
-                children: [
-                  Icon(
-                    Icons
-                        .history_rounded,
-                    size: 38,
-                    color:
-                    AppColors.border,
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    'No recent fee activity',
-                    style:
-                    TextStyle(
-                      color:
-                      AppColors
-                          .textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showComingSoon(
-      BuildContext context,
-      String title,
-      ) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(
-      SnackBar(
-        content: Text(
-          '$title will be connected to Supabase next.',
-        ),
-      ),
-    );
-  }
-}
-
-class _FeeStat {
-  final String title;
-  final String value;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-
-  const _FeeStat({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
-}
-
-class _FeeAction {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _FeeAction({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
+  Widget _stat(String t,String v,IconData i)=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Row(children:[Icon(i,color:AppColors.primary),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:const TextStyle(color:AppColors.textSecondary,fontSize:12)),Text(v,style:const TextStyle(fontWeight:FontWeight.w900,fontSize:18))]))])));
+  Widget _list()=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Student Fee Register',style:TextStyle(fontWeight:FontWeight.w800,fontSize:17)),const SizedBox(height:12),if(_fees.isEmpty)const Padding(padding:EdgeInsets.all(28),child:Center(child:Text('No fee records yet. Use Generate Current Month.'))) else ..._fees.take(100).map((f)=>ListTile(contentPadding:EdgeInsets.zero,leading:CircleAvatar(child:Text(_studentName(f['student_id']).substring(0,1).toUpperCase())),title:Text(_studentName(f['student_id']),style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text('Month: ${f['fee_month']??'-'} • Due: ${f['due_date']??'-'}'),trailing:Wrap(spacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[Text('Rs. ${f['amount']??0}',style:const TextStyle(fontWeight:FontWeight.w800)),Chip(label:Text('${f['status']??'unpaid'}')),if('${f['status']}'.toLowerCase()!='paid')IconButton(onPressed:_working?null:()=>_collectPayment(f),icon:const Icon(Icons.payments_rounded),tooltip:'Collect payment')])))])));
 }
