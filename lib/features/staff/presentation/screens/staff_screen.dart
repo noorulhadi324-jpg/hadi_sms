@@ -420,7 +420,7 @@ class _StaffPageState extends ConsumerState<_StaffPage> {
                           'is_active': active,
                         }).eq(
                           'id',
-                          staff!['id'],
+                          staff['id'],
                         );
 
                         ref.invalidate(

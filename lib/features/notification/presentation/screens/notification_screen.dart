@@ -275,7 +275,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         DropdownButtonFormField<
                             String>(
-                          value: type,
+                          initialValue: type,
                           decoration:
                           const InputDecoration(
                             labelText:
@@ -344,7 +344,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         DropdownButtonFormField<
                             String>(
-                          value: duration,
+                          initialValue: duration,
                           decoration:
                           const InputDecoration(
                             labelText:
@@ -1303,7 +1303,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Card(
       color: unread
           ? AppColors.primary
-          .withOpacity(0.02)
+          .withValues(alpha: 0.02)
           : Colors.white,
       child: InkWell(
         onTap: () {

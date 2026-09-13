@@ -300,7 +300,7 @@ class _EventsScreenState extends State<EventsScreen> {
                       const SizedBox(height: 14),
 
                       DropdownButtonFormField<String>(
-                        value: status,
+                        initialValue: status,
                         decoration:
                         const InputDecoration(
                           labelText: 'Status',
@@ -377,7 +377,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         status: status,
                       );
 
-                      if (!mounted) return;
+                      if (!mounted || !dialogContext.mounted) return;
 
                       Navigator.pop(dialogContext);
                     } catch (e) {
@@ -974,7 +974,7 @@ class _EventsScreenState extends State<EventsScreen> {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: color.withOpacity(.10),
+                color: color.withValues(alpha: .10),
                 borderRadius:
                 BorderRadius.circular(14),
               ),
@@ -1070,7 +1070,7 @@ class _EventsScreenState extends State<EventsScreen> {
               height: 52,
               decoration: BoxDecoration(
                 color: AppColors.primary
-                    .withOpacity(.10),
+                    .withValues(alpha: .10),
                 borderRadius:
                 BorderRadius.circular(16),
               ),
@@ -1109,7 +1109,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: statusColor
-                              .withOpacity(.10),
+                              .withValues(alpha: .10),
                           borderRadius:
                           BorderRadius
                               .circular(20),
@@ -1234,7 +1234,7 @@ class _EventsScreenState extends State<EventsScreen> {
         const SizedBox(width: 5),
         Text(
           text,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 11,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
@@ -1256,7 +1256,7 @@ class _EventsScreenState extends State<EventsScreen> {
               height: 80,
               decoration: BoxDecoration(
                 color:
-                AppColors.primary.withOpacity(.08),
+                AppColors.primary.withValues(alpha: .08),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

@@ -75,9 +75,11 @@ class ReportExportService {
   }
 
   static Future<void> shareFile(File file, {String? subject}) async {
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: subject,
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        subject: subject,
+      ),
     );
   }
 

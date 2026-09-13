@@ -412,6 +412,10 @@ class _HomeworkScreenState
       }
     }
 
+    if (!mounted) {
+      return;
+    }
+
     await showDialog<void>(
       context: context,
       barrierDismissible:
@@ -489,7 +493,7 @@ class _HomeworkScreenState
                       /// CLASS
                       DropdownButtonFormField<
                           String>(
-                        value:
+                        initialValue:
                         selectedClass.isEmpty
                             ? null
                             : selectedClass,
@@ -619,7 +623,7 @@ class _HomeworkScreenState
 
                           return DropdownButtonFormField<
                               String>(
-                            value:
+                            initialValue:
                             selectedSection
                                 .isEmpty
                                 ? null
@@ -787,7 +791,7 @@ class _HomeworkScreenState
                       /// STATUS
                       DropdownButtonFormField<
                           String>(
-                        value:
+                        initialValue:
                         status,
 
                         decoration:
@@ -852,7 +856,7 @@ class _HomeworkScreenState
                       ).pop();
 
                       _deleteHomework(
-                        homework!,
+                        homework,
                       );
                     },
                     child:
@@ -944,7 +948,8 @@ class _HomeworkScreenState
                         status,
                       );
 
-                      if (!mounted) {
+                      if (!mounted ||
+                          !dialogContext.mounted) {
                         return;
                       }
 
@@ -1991,8 +1996,8 @@ class _MetricCard
             BoxDecoration(
               color:
               metric.color
-                  .withOpacity(
-                .10,
+                  .withValues(
+                alpha: .10,
               ),
               borderRadius:
               BorderRadius.circular(
@@ -2240,8 +2245,8 @@ class _HomeworkCard
                     color:
                     AppColors
                         .primary
-                        .withOpacity(
-                      .09,
+                        .withValues(
+                      alpha: .09,
                     ),
                     borderRadius:
                     BorderRadius.circular(
@@ -2308,8 +2313,8 @@ class _HomeworkCard
                               BoxDecoration(
                                 color:
                                 statusColor
-                                    .withOpacity(
-                                  .10,
+                                    .withValues(
+                                  alpha: .10,
                                 ),
                                 borderRadius:
                                 BorderRadius.circular(
@@ -2901,8 +2906,8 @@ class _ErrorState
             Border.all(
               color:
               AppColors.error
-                  .withOpacity(
-                .15,
+                  .withValues(
+                alpha: .15,
               ),
             ),
           ),

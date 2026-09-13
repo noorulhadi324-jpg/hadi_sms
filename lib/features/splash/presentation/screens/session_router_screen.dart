@@ -54,11 +54,11 @@ class _SessionRouterScreenState extends State<SessionRouterScreen> {
         backgroundColor: AppColors.secondary,
         body: Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Container(width: 88, height: 88, decoration: BoxDecoration(color: Colors.white.withOpacity(.10), borderRadius: BorderRadius.circular(24)), child: const Icon(Icons.school_rounded, size: 46, color: Colors.white)),
+            Container(width: 88, height: 88, decoration: BoxDecoration(color: Colors.white.withValues(alpha: .10), borderRadius: BorderRadius.circular(24)), child: const Icon(Icons.school_rounded, size: 46, color: Colors.white)),
             const SizedBox(height: 28),
             const Text('HADI SMS', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Colors.white)),
             const SizedBox(height: 8),
-            Text('SECURE PORTAL', style: TextStyle(color: Colors.white.withOpacity(.55), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
+            Text('SECURE PORTAL', style: TextStyle(color: Colors.white.withValues(alpha: .55), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
             const SizedBox(height: 42),
             const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
           ]),

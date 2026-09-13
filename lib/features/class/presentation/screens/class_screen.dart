@@ -21,7 +21,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
   List<Map<String, dynamic>> _classes = [];
 
   bool _loading = true;
-  bool _saving = false;
+  final bool _saving = false;
 
   String? _error;
   int? _schoolId;
@@ -1858,8 +1858,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 BoxDecoration(
                   color: AppColors
                       .primary
-                      .withOpacity(
-                    .10,
+                      .withValues(
+                    alpha: .10,
                   ),
                   borderRadius:
                   BorderRadius.circular(
@@ -2150,8 +2150,8 @@ class _ClassStudentsSheetState
                   BoxDecoration(
                     color: AppColors
                         .primary
-                        .withOpacity(
-                      .10,
+                        .withValues(
+                      alpha: .10,
                     ),
                     borderRadius:
                     BorderRadius
@@ -2486,8 +2486,8 @@ class _ClassStudentsSheetState
                         backgroundColor:
                         AppColors
                             .primary
-                            .withOpacity(
-                          .10,
+                            .withValues(
+                          alpha: .10,
                         ),
                         child:
                         Text(
@@ -2540,13 +2540,13 @@ class _ClassStudentsSheetState
                               color: active
                                   ? AppColors
                                   .success
-                                  .withOpacity(
-                                .10,
+                                  .withValues(
+                                alpha: .10,
                               )
                                   : AppColors
                                   .error
-                                  .withOpacity(
-                                .10,
+                                  .withValues(
+                                alpha: .10,
                               ),
                               borderRadius:
                               BorderRadius

@@ -5,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/supabase_client.dart';
 import '../../../../core/widgets/main_wrapper.dart';
-import '../../data/repositories/communication_repository_impl.dart';
 import '../controllers/communication_controller.dart';
 
 class CommunicationCenterScreen extends ConsumerStatefulWidget {

@@ -314,7 +314,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor:
-                AppColors.error.withOpacity(0.1),
+                AppColors.error.withValues(alpha: 0.1),
                 foregroundColor: AppColors.error,
               ),
               child: const Text('Sign Out from Devices'),
@@ -346,7 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color:
-                  AppColors.primary.withOpacity(.08),
+                  AppColors.primary.withValues(alpha: .08),
                   borderRadius:
                   BorderRadius.circular(40),
                   border: Border.all(
@@ -456,7 +456,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             decoration: BoxDecoration(
               color:
-              AppColors.primary.withOpacity(0.1),
+              AppColors.primary.withValues(alpha: 0.1),
               borderRadius:
               BorderRadius.circular(20),
             ),

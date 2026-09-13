@@ -161,7 +161,7 @@ class _MessengerContent extends StatelessWidget {
             height: isMobile ? 44 : 50,
             decoration: BoxDecoration(
               color: AppColors.primary
-                  .withOpacity(.10),
+                  .withValues(alpha: .10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -351,7 +351,7 @@ class _MessengerContent extends StatelessWidget {
                     isMobile ? 27 : 29,
                     backgroundColor:
                     AppColors.primary
-                        .withOpacity(.10),
+                        .withValues(alpha: .10),
                     child: Text(
                       initials,
                       style:
@@ -563,8 +563,8 @@ class _MessengerContent extends StatelessWidget {
                         radius: 25,
                         backgroundColor:
                         AppColors.primary
-                            .withOpacity(
-                          .10,
+                            .withValues(
+                          alpha: .10,
                         ),
                         child: const Icon(
                           Icons
@@ -675,7 +675,7 @@ class _MessengerContent extends StatelessWidget {
               BoxDecoration(
                 color: AppColors
                     .primary
-                    .withOpacity(.08),
+                    .withValues(alpha: .08),
                 shape:
                 BoxShape.circle,
               ),
@@ -996,7 +996,7 @@ class _MessengerError
               BoxDecoration(
                 color: AppColors
                     .error
-                    .withOpacity(.08),
+                    .withValues(alpha: .08),
                 shape:
                 BoxShape.circle,
               ),

@@ -211,7 +211,7 @@ class SettingsRepository {
       },
     );
 
-    await channel.subscribe();
+    channel.subscribe();
 
     try {
       await for (final settings
@@ -427,7 +427,7 @@ class _SettingsHome extends ConsumerWidget {
             mobile ? 16 : 28,
           ),
           children: [
-            _Header(),
+            const _Header(),
 
             const SizedBox(height: 28),
 
@@ -667,7 +667,7 @@ class _SettingsHome extends ConsumerWidget {
 
             const SizedBox(height: 25),
 
-            Center(
+            const Center(
               child: Text(
                 'HADI SMS v1.0.0 Enterprise',
                 style: TextStyle(

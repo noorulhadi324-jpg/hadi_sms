@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 10),
                       Text(_portalTitle.toUpperCase(), style: GoogleFonts.inter(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 2)),
                       const SizedBox(height: 16),
-                      Text(_portalSubtitle, style: GoogleFonts.inter(color: Colors.white.withOpacity(.82), fontSize: 18, height: 1.6)),
+                      Text(_portalSubtitle, style: GoogleFonts.inter(color: Colors.white.withValues(alpha: .82), fontSize: 18, height: 1.6)),
                     ]),
                   ),
                 ),

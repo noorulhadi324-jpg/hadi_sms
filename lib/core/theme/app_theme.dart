@@ -18,8 +18,6 @@ class AppTheme {
       onSurface: AppColors.textPrimary,
       error: AppColors.error,
       onError: Colors.white,
-      background: AppColors.background,
-      onBackground: AppColors.textPrimary,
       outline: AppColors.border,
     );
 

@@ -416,15 +416,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return total;
   }
 
-  double _studentPendingFee(dynamic studentId) {
-    final total = _studentTotalFee(studentId);
-    final paid = _studentPaidFee(studentId);
-
-    return (total - paid)
-        .clamp(0, double.infinity)
-        .toDouble();
-  }
-
   Map<String, dynamic>? _pendingAdmissionFee(
       dynamic studentId,
       ) {
@@ -541,7 +532,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       children: [
                         DropdownButtonFormField<
                             Map<String, dynamic>>(
-                          value: student,
+                          initialValue: student,
                           isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Student',
@@ -580,7 +571,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
                         DropdownButtonFormField<
                             Map<String, dynamic>>(
-                          value: category,
+                          initialValue: category,
                           isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Fee Category',
@@ -635,7 +626,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         const SizedBox(height: 14),
 
                         DropdownButtonFormField<String>(
-                          value: paymentMethod,
+                          initialValue: paymentMethod,
                           isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Payment Method',
@@ -1326,7 +1317,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     (isPaid
                         ? AppColors.success
                         : AppColors.warning)
-                        .withOpacity(.10),
+                        .withValues(alpha: .10),
                     child: Icon(
                       isPaid
                           ? Icons.check_circle_outline
@@ -1531,8 +1522,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                                       BoxDecoration(
                                         color: AppColors
                                             .primary
-                                            .withOpacity(
-                                          .10,
+                                            .withValues(
+                                          alpha: .10,
                                         ),
                                         borderRadius:
                                         BorderRadius
@@ -1875,7 +1866,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   radius: 24,
                   backgroundColor:
                   AppColors.primary
-                      .withOpacity(.10),
+                      .withValues(alpha: .10),
                   child: Text(
                     initial,
                     style: const TextStyle(
@@ -2094,31 +2085,31 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.warning
-                      .withOpacity(.08),
+                      .withValues(alpha: .08),
                   borderRadius:
                   BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.warning
-                        .withOpacity(.20),
+                        .withValues(alpha: .20),
                   ),
                 ),
-                child: Row(
+                child: const Row(
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.info_outline_rounded,
                       color:
                       AppColors.warning,
                       size: 20,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Admission Fee is pending. '
                             'Student will automatically become ACTIVE after full payment.',
                         style:
-                        const TextStyle(
+                        TextStyle(
                           fontSize: 11,
                           color:
                           AppColors.warning,
@@ -2200,7 +2191,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(.10),
+        color: color.withValues(alpha: .10),
         borderRadius:
         BorderRadius.circular(20),
       ),
@@ -2262,11 +2253,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         padding:
         const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: color.withOpacity(.06),
+          color: color.withValues(alpha: .06),
           borderRadius:
           BorderRadius.circular(14),
           border: Border.all(
-            color: color.withOpacity(.15),
+            color: color.withValues(alpha: .15),
           ),
         ),
         child: Row(
@@ -2705,7 +2696,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 height: 42,
                 decoration:
                 BoxDecoration(
-                  color: color.withOpacity(.10),
+                  color: color.withValues(alpha: .10),
                   borderRadius:
                   BorderRadius.circular(
                     12,
@@ -3197,7 +3188,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       children: [
                         DropdownButtonFormField<
                             String>(
-                          value:
+                          initialValue:
                           selectedClass,
                           isExpanded: true,
                           decoration:
@@ -3544,7 +3535,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       children: [
                         DropdownButtonFormField<
                             Map<String, dynamic>>(
-                          value: student,
+                          initialValue: student,
                           isExpanded: true,
                           decoration:
                           const InputDecoration(
@@ -3586,7 +3577,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         ),
                         DropdownButtonFormField<
                             Map<String, dynamic>>(
-                          value: category,
+                          initialValue: category,
                           isExpanded: true,
                           decoration:
                           const InputDecoration(
@@ -3913,7 +3904,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       children: [
                         DropdownButtonFormField<
                             String?>(
-                          value:
+                          initialValue:
                           selectedClass,
                           isExpanded: true,
                           decoration:
@@ -4000,13 +3991,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
                                       .isEmpty
                                       ? AppColors
                                       .warning
-                                      .withOpacity(
-                                    .08,
+                                      .withValues(
+                                    alpha: .08,
                                   )
                                       : AppColors
                                       .primary
-                                      .withOpacity(
-                                    .06,
+                                      .withValues(
+                                    alpha: .06,
                                   ),
                                   borderRadius:
                                   BorderRadius.circular(
@@ -4452,7 +4443,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   decoration:
                   BoxDecoration(
                     color: AppColors.primary
-                        .withOpacity(.10),
+                        .withValues(alpha: .10),
                     borderRadius:
                     BorderRadius.circular(
                       14,
@@ -4615,8 +4606,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                               BoxDecoration(
                                 color: AppColors
                                     .primary
-                                    .withOpacity(
-                                  .10,
+                                    .withValues(
+                                  alpha: .10,
                                 ),
                                 borderRadius:
                                 BorderRadius
@@ -4906,7 +4897,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   children: [
                     CircleAvatar(
                       backgroundColor:
-                      color.withOpacity(.10),
+                      color.withValues(alpha: .10),
                       child: Icon(
                         Icons
                             .receipt_long_rounded,

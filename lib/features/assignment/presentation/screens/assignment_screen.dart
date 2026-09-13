@@ -458,7 +458,7 @@ class _AssignmentsScreenState
                       // STATUS
                       DropdownButtonFormField<
                           String>(
-                        value: status,
+                        initialValue: status,
 
                         decoration:
                         const InputDecoration(
@@ -585,7 +585,8 @@ class _AssignmentsScreenState
                         status,
                       );
 
-                      if (!mounted) {
+                      if (!mounted ||
+                          !dialogContext.mounted) {
                         return;
                       }
 
@@ -1295,8 +1296,8 @@ class _AssignmentsScreenState
               decoration:
               BoxDecoration(
                 color:
-                color.withOpacity(
-                  .10,
+                color.withValues(
+                  alpha: .10,
                 ),
 
                 borderRadius:
@@ -1498,8 +1499,8 @@ class _AssignmentsScreenState
                   BoxDecoration(
                     color:
                     AppColors.primary
-                        .withOpacity(
-                      .10,
+                        .withValues(
+                      alpha: .10,
                     ),
 
                     borderRadius:
@@ -1722,8 +1723,8 @@ class _AssignmentsScreenState
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
-          .10,
+        color.withValues(
+          alpha: .10,
         ),
 
         borderRadius:
@@ -1968,8 +1969,8 @@ class _AssignmentsScreenState
               BoxDecoration(
                 color:
                 AppColors.primary
-                    .withOpacity(
-                  .08,
+                    .withValues(
+                  alpha: .08,
                 ),
                 shape:
                 BoxShape.circle,
