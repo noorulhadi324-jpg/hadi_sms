@@ -1,0 +1,49 @@
+name: HADI SMS Analyzer Auto Fix
+
+on:
+  push:
+    branches: [codex/hadi-sms-analyzer-cleanup]
+
+permissions:
+  contents: write
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply Dart fixes
+        run: dart fix --apply
+      - name: Replace deprecated opacity API
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files = [
+              'lib/features/assignment/presentation/screens/assignment_screen.dart',
+              'lib/features/attendance/presentation/screens/attendance_screen.dart',
+              'lib/features/class/presentation/screens/class_screen.dart',
+              'lib/features/homework/presentation/screens/homework_screen.dart',
+          ]
+          for name in files:
+              p = Path(name)
+              text = p.read_text()
+              text = text.replace('.withOpacity(', '.withValues(alpha: ')
+              p.write_text(text)
+          PY
+      - name: Commit fixes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/features/assignment/presentation/screens/assignment_screen.dart \
+                  lib/features/attendance/presentation/screens/attendance_screen.dart \
+                  lib/features/class/presentation/screens/class_screen.dart \
+                  lib/features/homework/presentation/screens/homework_screen.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix: complete analyzer cleanup for steps 4-7 [skip ci]'
+          git push
