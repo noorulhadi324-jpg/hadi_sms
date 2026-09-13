@@ -489,7 +489,7 @@ class _HomeworkScreenState
                       /// CLASS
                       DropdownButtonFormField<
                           String>(
-                        value:
+                        initialValue:
                         selectedClass.isEmpty
                             ? null
                             : selectedClass,
@@ -619,7 +619,7 @@ class _HomeworkScreenState
 
                           return DropdownButtonFormField<
                               String>(
-                            value:
+                            initialValue:
                             selectedSection
                                 .isEmpty
                                 ? null
@@ -787,7 +787,7 @@ class _HomeworkScreenState
                       /// STATUS
                       DropdownButtonFormField<
                           String>(
-                        value:
+                        initialValue:
                         status,
 
                         decoration:
@@ -852,7 +852,7 @@ class _HomeworkScreenState
                       ).pop();
 
                       _deleteHomework(
-                        homework!,
+                        homework,
                       );
                     },
                     child:
@@ -1991,7 +1991,7 @@ class _MetricCard
             BoxDecoration(
               color:
               metric.color
-                  .withOpacity(
+                  .withValues(alpha: 
                 .10,
               ),
               borderRadius:
@@ -2240,7 +2240,7 @@ class _HomeworkCard
                     color:
                     AppColors
                         .primary
-                        .withOpacity(
+                        .withValues(alpha: 
                       .09,
                     ),
                     borderRadius:
@@ -2308,7 +2308,7 @@ class _HomeworkCard
                               BoxDecoration(
                                 color:
                                 statusColor
-                                    .withOpacity(
+                                    .withValues(alpha: 
                                   .10,
                                 ),
                                 borderRadius:
@@ -2901,7 +2901,7 @@ class _ErrorState
             Border.all(
               color:
               AppColors.error
-                  .withOpacity(
+                  .withValues(alpha: 
                 .15,
               ),
             ),

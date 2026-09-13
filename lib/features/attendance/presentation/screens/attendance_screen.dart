@@ -965,7 +965,7 @@ class _ClassCard
                     BoxDecoration(
                       color: AppColors
                           .primary
-                          .withOpacity(
+                          .withValues(alpha: 
                         .10,
                       ),
                       borderRadius:
@@ -1088,11 +1088,11 @@ class _ClassCard
               const SizedBox(
                 height: 12,
               ),
-              Align(
+              const Align(
                 alignment:
                 Alignment.centerLeft,
                 child:
-                const Text(
+                Text(
                   "Today's Attendance",
                   style:
                   TextStyle(
@@ -1161,7 +1161,7 @@ class _ClassCard
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
+        color.withValues(alpha: 
           .07,
         ),
         borderRadius:
@@ -1170,7 +1170,7 @@ class _ClassCard
         ),
         border: Border.all(
           color:
-          color.withOpacity(
+          color.withValues(alpha: 
             .14,
           ),
         ),
@@ -2260,7 +2260,7 @@ class _ClassAttendanceScreenState
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
+        color.withValues(alpha: 
           .06,
         ),
         borderRadius:
@@ -2270,7 +2270,7 @@ class _ClassAttendanceScreenState
         border:
         Border.all(
           color:
-          color.withOpacity(
+          color.withValues(alpha: 
             .12,
           ),
         ),
@@ -2293,7 +2293,7 @@ class _ClassAttendanceScreenState
             style:
             TextStyle(
               color:
-              color.withOpacity(
+              color.withValues(alpha: 
                 .75,
               ),
               fontWeight:

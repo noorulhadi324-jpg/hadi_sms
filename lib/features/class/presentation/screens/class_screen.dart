@@ -21,7 +21,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
   List<Map<String, dynamic>> _classes = [];
 
   bool _loading = true;
-  bool _saving = false;
+  final bool _saving = false;
 
   String? _error;
   int? _schoolId;
@@ -1858,7 +1858,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 BoxDecoration(
                   color: AppColors
                       .primary
-                      .withOpacity(
+                      .withValues(alpha: 
                     .10,
                   ),
                   borderRadius:
@@ -2150,7 +2150,7 @@ class _ClassStudentsSheetState
                   BoxDecoration(
                     color: AppColors
                         .primary
-                        .withOpacity(
+                        .withValues(alpha: 
                       .10,
                     ),
                     borderRadius:
@@ -2486,7 +2486,7 @@ class _ClassStudentsSheetState
                         backgroundColor:
                         AppColors
                             .primary
-                            .withOpacity(
+                            .withValues(alpha: 
                           .10,
                         ),
                         child:
@@ -2540,12 +2540,12 @@ class _ClassStudentsSheetState
                               color: active
                                   ? AppColors
                                   .success
-                                  .withOpacity(
+                                  .withValues(alpha: 
                                 .10,
                               )
                                   : AppColors
                                   .error
-                                  .withOpacity(
+                                  .withValues(alpha: 
                                 .10,
                               ),
                               borderRadius:

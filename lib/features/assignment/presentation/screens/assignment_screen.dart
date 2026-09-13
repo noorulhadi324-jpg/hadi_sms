@@ -458,7 +458,7 @@ class _AssignmentsScreenState
                       // STATUS
                       DropdownButtonFormField<
                           String>(
-                        value: status,
+                        initialValue: status,
 
                         decoration:
                         const InputDecoration(
@@ -1295,7 +1295,7 @@ class _AssignmentsScreenState
               decoration:
               BoxDecoration(
                 color:
-                color.withOpacity(
+                color.withValues(alpha: 
                   .10,
                 ),
 
@@ -1498,7 +1498,7 @@ class _AssignmentsScreenState
                   BoxDecoration(
                     color:
                     AppColors.primary
-                        .withOpacity(
+                        .withValues(alpha: 
                       .10,
                     ),
 
@@ -1722,7 +1722,7 @@ class _AssignmentsScreenState
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
+        color.withValues(alpha: 
           .10,
         ),
 
@@ -1968,7 +1968,7 @@ class _AssignmentsScreenState
               BoxDecoration(
                 color:
                 AppColors.primary
-                    .withOpacity(
+                    .withValues(alpha: 
                   .08,
                 ),
                 shape:
