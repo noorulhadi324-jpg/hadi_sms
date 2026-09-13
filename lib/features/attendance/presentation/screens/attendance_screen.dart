@@ -305,28 +305,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  // ============================================================
-  // DISPLAY CLASS NAME
-  // ============================================================
-
-  String _displayClassName(
-      String name,
-      ) {
-    final clean =
-    name.trim();
-
-    if (clean.isEmpty) {
-      return 'Class';
-    }
-
-    if (clean.toLowerCase().startsWith(
-      'class ',
-    )) {
-      return clean;
-    }
-
-    return 'Class $clean';
-  }
 
   // ============================================================
   // TODAY
@@ -965,8 +943,8 @@ class _ClassCard
                     BoxDecoration(
                       color: AppColors
                           .primary
-                          .withOpacity(
-                        .10,
+                          .withValues(
+                        alpha: .10,
                       ),
                       borderRadius:
                       BorderRadius
@@ -1088,11 +1066,11 @@ class _ClassCard
               const SizedBox(
                 height: 12,
               ),
-              Align(
+              const Align(
                 alignment:
                 Alignment.centerLeft,
                 child:
-                const Text(
+                Text(
                   "Today's Attendance",
                   style:
                   TextStyle(
@@ -1161,8 +1139,8 @@ class _ClassCard
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
-          .07,
+        color.withValues(
+          alpha: .07,
         ),
         borderRadius:
         BorderRadius.circular(
@@ -1170,8 +1148,8 @@ class _ClassCard
         ),
         border: Border.all(
           color:
-          color.withOpacity(
-            .14,
+          color.withValues(
+            alpha: .14,
           ),
         ),
       ),
@@ -2260,8 +2238,8 @@ class _ClassAttendanceScreenState
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
-          .06,
+        color.withValues(
+          alpha: .06,
         ),
         borderRadius:
         BorderRadius.circular(
@@ -2270,8 +2248,8 @@ class _ClassAttendanceScreenState
         border:
         Border.all(
           color:
-          color.withOpacity(
-            .12,
+          color.withValues(
+            alpha: .12,
           ),
         ),
       ),
@@ -2293,8 +2271,8 @@ class _ClassAttendanceScreenState
             style:
             TextStyle(
               color:
-              color.withOpacity(
-                .75,
+              color.withValues(
+                alpha: .75,
               ),
               fontWeight:
               FontWeight

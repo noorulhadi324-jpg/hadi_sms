@@ -16,7 +16,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
   final _client = SupabaseConfig.client;
   bool _loading = true;
   String? _error;
-  
+
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _sessions = [];
   int? _schoolId;
@@ -59,19 +59,195 @@ class _AcademicScreenState extends State<AcademicScreen> {
     }
   }
 
+  void _notify(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.error : AppColors.success,
+      ),
+    );
+  }
+
+  Future<void> _addClass() async {
+    final schoolId = _schoolId;
+    if (schoolId == null) {
+      _notify('Account not linked to school.', isError: true);
+      return;
+    }
+
+    final nameController = TextEditingController();
+    final levelController = TextEditingController();
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Add class'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: 'Class name *', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: levelController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Numeric level', border: OutlineInputBorder()),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Save')),
+        ],
+      ),
+    );
+
+    final className = nameController.text.trim();
+    final level = int.tryParse(levelController.text.trim());
+    nameController.dispose();
+    levelController.dispose();
+
+    if (saved != true || className.isEmpty) return;
+
+    try {
+      await _client.from('classes').insert({
+        'school_id': schoolId,
+        'class_name': className,
+        'numeric_level': level,
+      });
+      _notify('Class added.');
+      await _loadAcademicData();
+    } catch (e) {
+      _notify('Could not add class: $e', isError: true);
+    }
+  }
+
+  Future<void> _deleteClass(Map<String, dynamic> classRow) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete class'),
+        content: Text('Delete "${classRow['class_name']}" and its sections?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _client.from('classes').delete().eq('id', classRow['id']);
+      _notify('Class deleted.');
+      await _loadAcademicData();
+    } catch (e) {
+      _notify('Could not delete class: $e', isError: true);
+    }
+  }
+
+  Future<void> _setCurrentSession(Map<String, dynamic> session) async {
+    final schoolId = _schoolId;
+    if (schoolId == null) return;
+
+    try {
+      await _client.from('academic_sessions').update({'is_current': false}).eq('school_id', schoolId);
+      await _client.from('academic_sessions').update({'is_current': true}).eq('id', session['id']);
+      _notify('${session['session_name']} is now the active session.');
+      await _loadAcademicData();
+    } catch (e) {
+      _notify('Could not update session: $e', isError: true);
+    }
+  }
+
+  Future<void> _manageSessions() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            children: [
+              const Text('Academic sessions', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              if (_sessions.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text('No session has been created yet.', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+              ..._sessions.map(
+                (session) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(session['session_name']?.toString() ?? 'Session'),
+                  subtitle: Text('${session['start_date']} → ${session['end_date']}'),
+                  trailing: session['is_current'] == true
+                      ? const Chip(label: Text('Active'), backgroundColor: AppColors.primaryLight)
+                      : TextButton(
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop();
+                            _setCurrentSession(session);
+                          },
+                          child: const Text('Make active'),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainWrapper(
-      child: ListView(
-        padding: const EdgeInsets.all(24),
+      child: RefreshIndicator(
+        onRefresh: _loadAcademicData,
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            _buildHeader(),
+            if (_error != null) ...[
+              const SizedBox(height: 16),
+              _buildError(),
+            ],
+            const SizedBox(height: 24),
+            _buildActiveSession(),
+            const SizedBox(height: 32),
+            _buildSectionHeader('School Hierarchy', 'Manage your classes and sections.'),
+            const SizedBox(height: 16),
+            _buildClassGrid(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+      ),
+      child: Row(
         children: [
-          _buildHeader(),
-          const SizedBox(height: 24),
-          _buildActiveSession(),
-          const SizedBox(height: 32),
-          _buildSectionHeader('School Hierarchy', 'Manage your classes and sections.'),
-          const SizedBox(height: 16),
-          _buildClassGrid(),
+          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Text(_error!, style: const TextStyle(fontSize: 13))),
+          TextButton(onPressed: _loadAcademicData, child: const Text('Retry')),
         ],
       ),
     );
@@ -89,7 +265,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
         ),
         const Spacer(),
         FilledButton.tonalIcon(
-          onPressed: () {},
+          onPressed: _addClass,
           icon: const Icon(Icons.add_rounded, size: 20),
           label: const Text('Add Class'),
         ),
@@ -100,7 +276,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
   Widget _buildActiveSession() {
     final current = _sessions.where((s) => s['is_current'] == true).firstOrNull;
     return Card(
-      color: AppColors.primary.withOpacity(0.04),
+      color: AppColors.primary.withValues(alpha: 0.04),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
@@ -120,7 +296,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
                 ],
               ),
             ),
-            TextButton(onPressed: () {}, child: const Text('Manage Sessions')),
+            TextButton(onPressed: _manageSessions, child: const Text('Manage Sessions')),
           ],
         ),
       ),
@@ -155,7 +331,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
         final c = _classes[index];
         return Card(
           child: InkWell(
-            onTap: () {},
+            onTap: () => _deleteClass(c),
             borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -166,7 +342,11 @@ class _AcademicScreenState extends State<AcademicScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(c['class_name'], style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-                      const Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.border),
+                      IconButton(
+                        tooltip: 'Delete class',
+                        onPressed: () => _deleteClass(c),
+                        icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                      ),
                     ],
                   ),
                   const Spacer(),

@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(Icons.school_rounded, size: 48, color: Colors.white),
@@ -74,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 32),
               const Text('HADI SMS', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
               const SizedBox(height: 8),
-              Text('ENTERPRISE SCHOOL MANAGEMENT', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
+              Text('ENTERPRISE SCHOOL MANAGEMENT', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
               const SizedBox(height: 48),
               const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
             ],

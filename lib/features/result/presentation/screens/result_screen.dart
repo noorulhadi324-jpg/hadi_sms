@@ -983,8 +983,8 @@ class _ResultsContent
       decoration:
       BoxDecoration(
         color:
-        color.withOpacity(
-          .06,
+        color.withValues(
+          alpha: .06,
         ),
 
         borderRadius:
@@ -995,8 +995,8 @@ class _ResultsContent
         border:
         Border.all(
           color:
-          color.withOpacity(
-            .12,
+          color.withValues(
+            alpha: .12,
           ),
         ),
       ),
@@ -1027,8 +1027,8 @@ class _ResultsContent
             style:
             TextStyle(
               color:
-              color.withOpacity(
-                .7,
+              color.withValues(
+                alpha: .7,
               ),
               fontWeight:
               FontWeight.w700,
@@ -1161,7 +1161,7 @@ class _ResultsContent
 
           child:
           DropdownButtonFormField<int?>(
-            value:
+            initialValue:
             selectedExam,
 
             decoration:
@@ -1231,7 +1231,7 @@ class _ResultsContent
 
           child:
           DropdownButtonFormField<int?>(
-            value:
+            initialValue:
             selectedClass,
 
             decoration:
@@ -1417,8 +1417,8 @@ class _ResultsContent
               backgroundColor:
               failed
                   ? AppColors.error
-                  .withOpacity(
-                .08,
+                  .withValues(
+                alpha: .08,
               )
                   : AppColors.background,
 
@@ -1693,8 +1693,8 @@ class _ErrorView
             Border.all(
               color:
               AppColors.error
-                  .withOpacity(
-                .15,
+                  .withValues(
+                alpha: .15,
               ),
             ),
           ),

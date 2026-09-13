@@ -103,8 +103,11 @@ final parentDashboardProvider =
       final status = row['status']?.toString().toLowerCase();
       if (status != 'paid' && status != 'cancelled') {
         final amount = row['amount'];
-        if (amount is num) pendingFees += amount.toDouble();
-        else pendingFees += double.tryParse(amount?.toString() ?? '') ?? 0;
+        if (amount is num) {
+          pendingFees += amount.toDouble();
+        } else {
+          pendingFees += double.tryParse(amount?.toString() ?? '') ?? 0;
+        }
       }
     }
 
@@ -179,7 +182,7 @@ class ParentDashboardScreen extends ConsumerWidget {
               const Text('My Children', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
               const SizedBox(height: 12),
               if (data.children.isEmpty)
-                _InfoCard(
+                const _InfoCard(
                   icon: Icons.person_off_outlined,
                   title: 'No child linked yet',
                   subtitle: 'Ask the school administration to link your email with the student record.',

@@ -402,7 +402,7 @@ class DashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: 25),
 
-                _SectionTitle(
+                const _SectionTitle(
                   title: 'School Overview',
                   subtitle:
                       'Live information from your school',
@@ -456,7 +456,7 @@ class DashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: 22),
 
-                _SectionTitle(
+                const _SectionTitle(
                   title: 'Quick Access',
                   subtitle:
                       'Only the most important modules',
@@ -464,7 +464,7 @@ class DashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: 12),
 
-                _QuickAccessGrid(),
+                const _QuickAccessGrid(),
 
                 const SizedBox(height: 22),
 
@@ -649,7 +649,7 @@ class _WelcomeBanner
           BoxShadow(
             color:
                 AppColors.primary
-                    .withOpacity(.18),
+                    .withValues(alpha: .18),
             blurRadius: 20,
             offset:
                 const Offset(0, 8),
@@ -683,7 +683,7 @@ class _WelcomeBanner
                       TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white
-                        .withOpacity(.82),
+                        .withValues(alpha: .82),
                     fontSize: 11.5,
                     height: 1.35,
                   ),
@@ -701,7 +701,7 @@ class _WelcomeBanner
             decoration:
                 BoxDecoration(
               color: Colors.white
-                  .withOpacity(.13),
+                  .withValues(alpha: .13),
               shape:
                   BoxShape.circle,
             ),
@@ -883,7 +883,7 @@ class _StatCard
         boxShadow: [
           BoxShadow(
             color:
-                Colors.black.withOpacity(.025),
+                Colors.black.withValues(alpha: .025),
             blurRadius: 14,
             offset:
                 const Offset(0, 5),
@@ -907,7 +907,7 @@ class _StatCard
                 BoxDecoration(
               color:
                   item.color
-                      .withOpacity(.10),
+                      .withValues(alpha: .10),
               borderRadius:
                   BorderRadius.circular(11),
             ),
@@ -970,7 +970,7 @@ class _AttendanceCard
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          _PanelHeader(
+          const _PanelHeader(
             title:
                 'Attendance Analytics',
             subtitle:
@@ -1026,7 +1026,7 @@ class _AttendanceCard
                           maxY: 100,
 
                           gridData:
-                              FlGridData(
+                              const FlGridData(
                             show: true,
                             drawVerticalLine:
                                 false,
@@ -1113,8 +1113,8 @@ class _AttendanceCard
                                 show: true,
                                 color: AppColors
                                     .primary
-                                    .withOpacity(
-                                  .08,
+                                    .withValues(
+                                  alpha: .08,
                                 ),
                               ),
                             ),
@@ -1183,7 +1183,7 @@ class _FinanceCard
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          _PanelHeader(
+          const _PanelHeader(
             title:
                 'Finance',
             subtitle:
@@ -1331,37 +1331,37 @@ class _QuickAccessGrid
   @override
   Widget build(BuildContext context) {
     final actions = [
-      _QuickAction(
+      const _QuickAction(
         'Students',
         Icons.people_alt_rounded,
         AppColors.primary,
         '/student',
       ),
-      _QuickAction(
+      const _QuickAction(
         'Attendance',
         Icons.fact_check_rounded,
         AppColors.success,
         '/attendance',
       ),
-      _QuickAction(
+      const _QuickAction(
         'Finance',
         Icons.account_balance_wallet_rounded,
         AppColors.warning,
         '/finance',
       ),
-      _QuickAction(
+      const _QuickAction(
         'Examinations',
         Icons.quiz_rounded,
-        const Color(0xFFEC4899),
+        Color(0xFFEC4899),
         '/examination',
       ),
-      _QuickAction(
+      const _QuickAction(
         'Notices',
         Icons.notifications_rounded,
-        const Color(0xFF7C3AED),
+        Color(0xFF7C3AED),
         '/notification',
       ),
-      _QuickAction(
+      const _QuickAction(
         'Teachers',
         Icons.school_rounded,
         AppColors.info,
@@ -1465,7 +1465,7 @@ class _QuickActionCard
               BoxShadow(
                 color:
                     Colors.black
-                        .withOpacity(.02),
+                        .withValues(alpha: .02),
                 blurRadius: 10,
                 offset:
                     const Offset(0, 4),
@@ -1482,7 +1482,7 @@ class _QuickActionCard
                 decoration:
                     BoxDecoration(
                   color: action.color
-                      .withOpacity(.10),
+                      .withValues(alpha: .10),
                   borderRadius:
                       BorderRadius.circular(13),
                 ),
@@ -1546,7 +1546,7 @@ class _AcademicOverview
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          _PanelHeader(
+          const _PanelHeader(
             title:
                 'Academic Overview',
             subtitle:
@@ -1554,7 +1554,7 @@ class _AcademicOverview
             icon:
                 Icons.auto_stories_rounded,
             color:
-                const Color(0xFF7C3AED),
+                Color(0xFF7C3AED),
           ),
 
           const SizedBox(height: 14),
@@ -1834,7 +1834,7 @@ class _RecentActivity
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          _PanelHeader(
+          const _PanelHeader(
             title:
                 'Recent Activity',
             subtitle:
@@ -1918,8 +1918,8 @@ class _RecentActivity
                           decoration:
                               BoxDecoration(
                             color: color
-                                .withOpacity(
-                              .10,
+                                .withValues(
+                              alpha: .10,
                             ),
                             borderRadius:
                                 BorderRadius.circular(
@@ -2055,7 +2055,7 @@ class _Panel
         boxShadow: [
           BoxShadow(
             color:
-                Colors.black.withOpacity(.025),
+                Colors.black.withValues(alpha: .025),
             blurRadius: 15,
             offset:
                 const Offset(0, 5),
@@ -2093,7 +2093,7 @@ class _PanelHeader
           decoration:
               BoxDecoration(
             color:
-                color.withOpacity(.10),
+                color.withValues(alpha: .10),
             borderRadius:
                 BorderRadius.circular(11),
           ),
@@ -2190,7 +2190,7 @@ class _DashboardError
                 Border.all(
               color:
                   AppColors.error
-                      .withOpacity(.18),
+                      .withValues(alpha: .18),
             ),
           ),
           child: Column(

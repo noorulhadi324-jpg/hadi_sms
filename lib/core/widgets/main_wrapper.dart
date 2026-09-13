@@ -459,7 +459,7 @@ class _ProfileButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color:
-      AppColors.primary.withOpacity(.08),
+      AppColors.primary.withValues(alpha: .08),
 
       shape:
       const CircleBorder(),
@@ -529,7 +529,7 @@ class _SchoolBranding extends StatelessWidget {
             BoxDecoration(
               color:
               AppColors.primary
-                  .withOpacity(.08),
+                  .withValues(alpha: .08),
 
               borderRadius:
               BorderRadius.circular(12),
@@ -653,7 +653,7 @@ class _SchoolBrandingLoading
           BoxDecoration(
             color:
             AppColors.primary
-                .withOpacity(.08),
+                .withValues(alpha: .08),
 
             borderRadius:
             BorderRadius.circular(12),

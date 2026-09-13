@@ -1,30 +1,111 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/module_screen.dart';
+
+import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/record_module_screen.dart';
+
+double _amountOf(Map<String, dynamic> row, String type) {
+  if (row['entry_type'] != type) {
+    return 0;
+  }
+
+  return (row['amount'] as num?)?.toDouble() ?? 0;
+}
+
+final accountingModuleConfig = RecordModuleConfig(
+  table: 'accounting_entries',
+  title: 'Accounting',
+  subtitle: 'Income and expense ledger of the school.',
+  icon: Icons.account_balance_rounded,
+  titleColumn: 'description',
+  subtitleColumns: const ['category', 'entry_date'],
+  orderColumn: 'entry_date',
+  status: const RecordStatus(
+    column: 'entry_type',
+    colors: {'income': AppColors.success, 'expense': AppColors.error},
+  ),
+  fields: const [
+    RecordField(column: 'description', label: 'Description', required: true),
+    RecordField(
+      column: 'entry_type',
+      label: 'Entry type',
+      type: RecordFieldType.select,
+      required: true,
+      options: ['income', 'expense'],
+    ),
+    RecordField(
+      column: 'category',
+      label: 'Category',
+      required: true,
+      hint: 'Tuition, Utilities, Salaries...',
+    ),
+    RecordField(
+      column: 'amount',
+      label: 'Amount',
+      type: RecordFieldType.money,
+      required: true,
+    ),
+    RecordField(
+      column: 'entry_date',
+      label: 'Entry date',
+      type: RecordFieldType.date,
+      required: true,
+    ),
+    RecordField(
+      column: 'payment_method',
+      label: 'Payment method',
+      type: RecordFieldType.select,
+      options: ['cash', 'bank', 'cheque', 'online'],
+    ),
+    RecordField(column: 'reference_no', label: 'Reference no'),
+    RecordField(
+      column: 'notes',
+      label: 'Notes',
+      type: RecordFieldType.multiline,
+      showInSummary: false,
+    ),
+  ],
+  metrics: [
+    RecordMetric(
+      label: 'Entries',
+      icon: Icons.list_alt_rounded,
+      color: AppColors.primary,
+      value: (rows) => rows.length.toString(),
+    ),
+    RecordMetric(
+      label: 'Total income',
+      icon: Icons.trending_up_rounded,
+      color: AppColors.success,
+      value: (rows) =>
+          'Rs ${formatAmount(rows.fold<double>(0, (total, row) => total + _amountOf(row, 'income')))}',
+    ),
+    RecordMetric(
+      label: 'Total expense',
+      icon: Icons.trending_down_rounded,
+      color: AppColors.error,
+      value: (rows) =>
+          'Rs ${formatAmount(rows.fold<double>(0, (total, row) => total + _amountOf(row, 'expense')))}',
+    ),
+    RecordMetric(
+      label: 'Net balance',
+      icon: Icons.balance_rounded,
+      color: AppColors.info,
+      value: (rows) {
+        final balance = rows.fold<double>(
+          0,
+          (total, row) =>
+              total + _amountOf(row, 'income') - _amountOf(row, 'expense'),
+        );
+
+        return 'Rs ${formatAmount(balance)}';
+      },
+    ),
+  ],
+);
 
 class AccountingScreen extends StatelessWidget {
   const AccountingScreen({super.key});
+
   @override
-  Widget build(BuildContext context) => ModuleScreen(
-    title: 'Accounting',
-    subtitle: 'Track school accounts, income, expenses and balances.',
-    icon: Icons.account_balance_rounded,
-    metrics: const [
-      ModuleMetric('Total', '128', 'This session', Icons.grid_view_rounded, Color(0xFF7C3AED)),
-      ModuleMetric('Active', '96', 'Currently active', Icons.check_circle_outline_rounded, Color(0xFF16A34A)),
-      ModuleMetric('Pending', '18', 'Needs attention', Icons.schedule_rounded, Color(0xFFF59E0B)),
-      ModuleMetric('Updated', 'Today', 'Latest activity', Icons.update_rounded, Color(0xFF2563EB)),
-    ],
-    actions: const [
-      ModuleAction('Add new record', Icons.add_circle_outline_rounded),
-      ModuleAction('Import / upload', Icons.file_upload_outlined),
-      ModuleAction('Export report', Icons.file_download_outlined),
-      ModuleAction('View settings', Icons.tune_rounded),
-    ],
-    rows: const [
-      ModuleRow('New record created', 'HADI SMS • Today', 'Just now', Icons.add_task_rounded, Color(0xFF7C3AED)),
-      ModuleRow('Monthly data updated', 'School management', 'Today', Icons.sync_rounded, Color(0xFF2563EB)),
-      ModuleRow('Review pending items', 'Requires attention', 'Pending', Icons.warning_amber_rounded, Color(0xFFF59E0B)),
-      ModuleRow('System activity', 'Everything is running normally', 'OK', Icons.verified_rounded, Color(0xFF16A34A)),
-    ],
-  );
+  Widget build(BuildContext context) =>
+      RecordModuleScreen(config: accountingModuleConfig);
 }
