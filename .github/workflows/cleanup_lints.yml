@@ -1,0 +1,60 @@
+name: HADI SMS Analyzer Cleanup
+
+on:
+  push:
+    branches:
+      - codex/hadi-sms-analyzer-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Apply Dart fixes
+        run: dart fix --apply
+
+      - name: Replace deprecated opacity API
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for path in Path('lib').rglob('*.dart'):
+              text = path.read_text(encoding='utf-8')
+              updated = re.sub(r'\.withOpacity\(\s*(0(?:\.\d+)?|1(?:\.0+)?)\s*\)', r'.withValues(alpha: \1)', text)
+              if updated != text:
+                  path.write_text(updated, encoding='utf-8')
+          PY
+
+      - name: Format Dart sources
+        run: dart format lib
+
+      - name: Verify analyzer
+        run: flutter analyze
+
+      - name: Commit cleanup
+        run: |
+          if git diff --quiet; then
+            echo "No cleanup changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib
+          git commit -m "chore: finish analyzer cleanup"
+          git push
