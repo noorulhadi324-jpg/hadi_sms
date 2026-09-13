@@ -306,29 +306,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   // ============================================================
-  // DISPLAY CLASS NAME
-  // ============================================================
-
-  String _displayClassName(
-      String name,
-      ) {
-    final clean =
-    name.trim();
-
-    if (clean.isEmpty) {
-      return 'Class';
-    }
-
-    if (clean.toLowerCase().startsWith(
-      'class ',
-    )) {
-      return clean;
-    }
-
-    return 'Class $clean';
-  }
-
-  // ============================================================
   // TODAY
   // ============================================================
 

@@ -416,15 +416,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return total;
   }
 
-  double _studentPendingFee(dynamic studentId) {
-    final total = _studentTotalFee(studentId);
-    final paid = _studentPaidFee(studentId);
-
-    return (total - paid)
-        .clamp(0, double.infinity)
-        .toDouble();
-  }
-
   Map<String, dynamic>? _pendingAdmissionFee(
       dynamic studentId,
       ) {

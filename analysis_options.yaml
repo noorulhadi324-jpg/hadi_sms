@@ -6,6 +6,4 @@ linter:
   rules:
     # These rules are intentionally disabled project-wide while the legacy
     # screens are being migrated. They do not represent runtime failures.
-    deprecated_member_use: false
     use_build_context_synchronously: false
-    unused_field: false

@@ -119,10 +119,6 @@ class ExaminationsRepository {
       const Duration(seconds: 15),
     );
 
-    if (response is! List) {
-      return [];
-    }
-
     return response
         .whereType<Map>()
         .map(
@@ -151,10 +147,6 @@ class ExaminationsRepository {
       const Duration(seconds: 10),
     );
 
-    if (response is! List) {
-      return [];
-    }
-
     return response
         .whereType<Map>()
         .map(
@@ -180,10 +172,6 @@ class ExaminationsRepository {
         .timeout(
       const Duration(seconds: 10),
     );
-
-    if (response is! List) {
-      return [];
-    }
 
     return response
         .whereType<Map>()

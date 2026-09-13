@@ -7,6 +7,7 @@ class AppColors {
   static const Color primary = Color(0xFF4F46E5); // Deep Indigo
   static const Color primaryLight = Color(0xFFEEF2FF);
   static const Color secondary = Color(0xFF1E1B4B); // Sidebar Deep Indigo
+  static const Color accent = Color(0xFF8B5CF6); // Violet accent
   
   // Neutral palette
   static const Color background = Color(0xFFF8FAFC);
