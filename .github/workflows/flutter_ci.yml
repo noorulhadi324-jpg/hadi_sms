@@ -2,7 +2,7 @@ name: HADI SMS Flutter CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/hadi-sms-analyzer-cleanup]
   pull_request:
     branches: [main]
 
