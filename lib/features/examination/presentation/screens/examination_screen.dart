@@ -588,7 +588,7 @@ class _ExaminationsContent extends ConsumerWidget {
       WidgetRef ref,
       bool mobile,
       ) {
-    final title = const Column(
+    const title = Column(
       crossAxisAlignment:
       CrossAxisAlignment.start,
       children: [
@@ -641,7 +641,7 @@ class _ExaminationsContent extends ConsumerWidget {
 
     return Row(
       children: [
-        Expanded(
+        const Expanded(
           child: title,
         ),
         button,
@@ -721,9 +721,9 @@ class _ExaminationsContent extends ConsumerWidget {
         : null;
 
     if (exam == null) {
-      return Card(
+      return const Card(
         color: AppColors.primary,
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.all(24),
           child: Text(
             'No examination cycle scheduled yet.',
@@ -754,7 +754,7 @@ class _ExaminationsContent extends ConsumerWidget {
               ),
               decoration: BoxDecoration(
                 color:
-                Colors.white.withOpacity(.15),
+                Colors.white.withValues(alpha: .15),
                 borderRadius:
                 BorderRadius.circular(20),
               ),
@@ -996,7 +996,7 @@ class _ExaminationsContent extends ConsumerWidget {
                               decoration:
                               BoxDecoration(
                                 color: Colors.red
-                                    .withOpacity(.08),
+                                    .withValues(alpha: .08),
                                 borderRadius:
                                 BorderRadius
                                     .circular(10),
@@ -1117,7 +1117,7 @@ class _ExaminationsContent extends ConsumerWidget {
                               decoration:
                               BoxDecoration(
                                 color: Colors.red
-                                    .withOpacity(.08),
+                                    .withValues(alpha: .08),
                                 borderRadius:
                                 BorderRadius
                                     .circular(10),
@@ -1516,7 +1516,7 @@ class _ExamCard extends StatelessWidget {
               decoration:
               BoxDecoration(
                 color: iconColor
-                    .withOpacity(.10),
+                    .withValues(alpha: .10),
                 borderRadius:
                 BorderRadius.circular(
                   14,
@@ -1665,7 +1665,7 @@ class _StatCard extends StatelessWidget {
                 BoxDecoration(
                   color: AppColors
                       .primary
-                      .withOpacity(.10),
+                      .withValues(alpha: .10),
                   borderRadius:
                   BorderRadius.circular(
                     12,
@@ -1748,7 +1748,7 @@ class _MiniBadge extends StatelessWidget {
       decoration:
       BoxDecoration(
         color:
-        Colors.white.withOpacity(.14),
+        Colors.white.withValues(alpha: .14),
         borderRadius:
         BorderRadius.circular(12),
       ),
@@ -1807,7 +1807,7 @@ class _EmptyExams
               size: 55,
               color: AppColors
                   .primary
-                  .withOpacity(.45),
+                  .withValues(alpha: .45),
             ),
 
             const SizedBox(height: 14),

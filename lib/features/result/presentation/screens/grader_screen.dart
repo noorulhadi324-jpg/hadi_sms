@@ -36,8 +36,12 @@ class _GraderScreenState extends ConsumerState<GraderScreen> {
 
   @override
   void dispose() {
-    for (final c in marks.values) c.dispose();
-    for (final c in remarks.values) c.dispose();
+    for (final c in marks.values) {
+      c.dispose();
+    }
+    for (final c in remarks.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -45,7 +49,9 @@ class _GraderScreenState extends ConsumerState<GraderScreen> {
   String _name(Map<String, dynamic> s) => s['full_name']?.toString() ?? 'Student #${s['id']}';
 
   Map<String, dynamic>? _find(List<Map<String, dynamic>> rows, int id) {
-    for (final r in rows) if (_id(r['id']) == id) return r;
+    for (final r in rows) {
+      if (_id(r['id']) == id) return r;
+    }
     return null;
   }
 
@@ -145,9 +151,9 @@ class _GraderScreenState extends ConsumerState<GraderScreen> {
         Row(children: [const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Exam Grader', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900)), SizedBox(height: 5), Text('Enter, calculate and save student marks.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))])), if (!mobile) FilledButton.icon(onPressed: saving ? null : () => _save(d), icon: const Icon(Icons.save_rounded), label: const Text('Save Marks'))]),
         const SizedBox(height: 22),
         Card(child: Padding(padding: const EdgeInsets.all(18), child: Wrap(spacing: 14, runSpacing: 14, children: [
-          SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(value: examId, decoration: const InputDecoration(labelText: 'Examination'), items: exams.map((e) => DropdownMenuItem(value: _id(e['id']), child: Text(e['title']?.toString() ?? 'Exam'))).toList(), onChanged: (v) => setState(() { examId = v; classId = null; examSubjectId = null; }))),
-          SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(value: classId, decoration: const InputDecoration(labelText: 'Class / Section'), items: classes.where((c) => d['examClasses'].any((x) => _id(x['exam_id']) == examId && _id(x['class_id']) == _id(c['id']))).map((c) => DropdownMenuItem(value: _id(c['id']), child: Text('${c['name']} ${c['section_name'] ?? ''}'))).toList(), onChanged: (v) => setState(() { classId = v; examSubjectId = null; }))),
-          SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(value: examSubjectId, decoration: const InputDecoration(labelText: 'Subject'), items: filteredSubjects.map((x) { final s = _find(subjects, _id(x['subject_id'])); return DropdownMenuItem(value: _id(x['id']), child: Text(s?['name']?.toString() ?? 'Subject')); }).toList(), onChanged: (v) => setState(() { examSubjectId = v; }))),
+          SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(initialValue: examId, decoration: const InputDecoration(labelText: 'Examination'), items: exams.map((e) => DropdownMenuItem(value: _id(e['id']), child: Text(e['title']?.toString() ?? 'Exam'))).toList(), onChanged: (v) => setState(() { examId = v; classId = null; examSubjectId = null; }))),
+          SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(initialValue: classId, decoration: const InputDecoration(labelText: 'Class / Section'), items: classes.where((c) => d['examClasses'].any((x) => _id(x['exam_id']) == examId && _id(x['class_id']) == _id(c['id']))).map((c) => DropdownMenuItem(value: _id(c['id']), child: Text('${c['name']} ${c['section_name'] ?? ''}'))).toList(), onChanged: (v) => setState(() { classId = v; examSubjectId = null; }))),
+          SizedBox(width: mobile ? double.infinity : 230, child: DropdownButtonFormField<int>(initialValue: examSubjectId, decoration: const InputDecoration(labelText: 'Subject'), items: filteredSubjects.map((x) { final s = _find(subjects, _id(x['subject_id'])); return DropdownMenuItem(value: _id(x['id']), child: Text(s?['name']?.toString() ?? 'Subject')); }).toList(), onChanged: (v) => setState(() { examSubjectId = v; }))),
         ]))),
         if (examSubjectId != null) ...[
           const SizedBox(height: 18),

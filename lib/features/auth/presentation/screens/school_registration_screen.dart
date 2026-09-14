@@ -805,8 +805,8 @@ class _SchoolRegistrationScreenState
                     colors: [
                       AppColors.primary,
                       AppColors.primary
-                          .withOpacity(
-                        0.85,
+                          .withValues(
+                        alpha: 0.85,
                       ),
                     ],
                     begin:
@@ -817,14 +817,14 @@ class _SchoolRegistrationScreenState
                 ),
 
                 child:
-                Align(
+                const Align(
                   alignment:
                   Alignment.bottomLeft,
 
                   child:
                   Padding(
                     padding:
-                    const EdgeInsets.only(
+                    EdgeInsets.only(
                       left: 24,
                       right: 24,
                       bottom: 20,
@@ -838,7 +838,7 @@ class _SchoolRegistrationScreenState
                       crossAxisAlignment:
                       CrossAxisAlignment.start,
 
-                      children: const [
+                      children: [
 
                         Text(
                           'Register Your Institution',
@@ -1129,8 +1129,8 @@ class _SchoolRegistrationScreenState
                               disabledBackgroundColor:
                               AppColors
                                   .primary
-                                  .withOpacity(
-                                0.55,
+                                  .withValues(
+                                alpha: 0.55,
                               ),
 
                               elevation:
@@ -1139,8 +1139,8 @@ class _SchoolRegistrationScreenState
                               shadowColor:
                               AppColors
                                   .primary
-                                  .withOpacity(
-                                0.4,
+                                  .withValues(
+                                alpha: 0.4,
                               ),
 
                               shape:
@@ -1278,8 +1278,8 @@ class _SchoolRegistrationScreenState
                       color:
                       AppColors
                           .primary
-                          .withOpacity(
-                        0.12,
+                          .withValues(
+                        alpha: 0.12,
                       ),
                       blurRadius:
                       20,
@@ -1320,8 +1320,8 @@ class _SchoolRegistrationScreenState
                       color:
                       AppColors
                           .primary
-                          .withOpacity(
-                        0.6,
+                          .withValues(
+                        alpha: 0.6,
                       ),
                     ),
                   )
@@ -1616,8 +1616,8 @@ class _SchoolRegistrationScreenState
             color:
             const Color(
               0xFF0F172A,
-            ).withOpacity(
-              0.03,
+            ).withValues(
+              alpha: 0.03,
             ),
 
             blurRadius:
@@ -1653,8 +1653,8 @@ class _SchoolRegistrationScreenState
                   color:
                   AppColors
                       .primary
-                      .withOpacity(
-                    0.08,
+                      .withValues(
+                    alpha: 0.08,
                   ),
 
                   borderRadius:

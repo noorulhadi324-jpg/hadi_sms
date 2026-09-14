@@ -289,7 +289,7 @@ class _ResultCardScreenState
             SizedBox(
               width: 300,
               child: DropdownButtonFormField<int>(
-                value: examId,
+                initialValue: examId,
                 decoration: const InputDecoration(
                   labelText: 'Examination',
                   border: OutlineInputBorder(),
@@ -315,7 +315,7 @@ class _ResultCardScreenState
             SizedBox(
               width: 300,
               child: DropdownButtonFormField<int>(
-                value: studentId,
+                initialValue: studentId,
                 decoration: const InputDecoration(
                   labelText: 'Student',
                   border: OutlineInputBorder(),
@@ -386,7 +386,7 @@ class _ResultCardScreenState
             Center(
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     'RESULT CARD',
                     style: TextStyle(
                       fontSize: 25,
@@ -590,7 +590,7 @@ class _ResultCardScreenState
               'Position: ${position > 0 ? position : '—'}',
             ),
             pw.SizedBox(height: 15),
-            pw.Table.fromTextArray(
+            pw.TableHelper.fromTextArray(
               headers: [
                 'Subject',
                 'Obtained',

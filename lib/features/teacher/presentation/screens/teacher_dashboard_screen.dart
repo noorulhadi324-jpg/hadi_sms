@@ -136,7 +136,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(22),
                           child: Row(children: [
-                            CircleAvatar(radius: 32, backgroundColor: AppColors.primary.withOpacity(.12), child: const Icon(Icons.person_rounded, size: 34, color: AppColors.primary)),
+                            CircleAvatar(radius: 32, backgroundColor: AppColors.primary.withValues(alpha: .12), child: const Icon(Icons.person_rounded, size: 34, color: AppColors.primary)),
                             const SizedBox(width: 16),
                             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Welcome back', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)), const SizedBox(height: 4), Text(teacherName, style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900)), const SizedBox(height: 5), Text('$subject • $className${section.isEmpty ? '' : ' • Section $section'}', style: const TextStyle(color: AppColors.textSecondary))])),
                           ]),
@@ -198,7 +198,7 @@ class _PortalTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          leading: Container(padding: const EdgeInsets.all(11), decoration: BoxDecoration(color: AppColors.primary.withOpacity(.10), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppColors.primary)),
+          leading: Container(padding: const EdgeInsets.all(11), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: .10), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: AppColors.primary)),
           title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
           subtitle: Text(subtitle),
           trailing: const Icon(Icons.chevron_right_rounded),

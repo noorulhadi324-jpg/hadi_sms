@@ -384,10 +384,10 @@ class LibraryScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(11),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(.12),
+                color: AppColors.primary.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.local_library_rounded,
                 color: AppColors.primary,
                 size: 28,
@@ -665,10 +665,10 @@ class LibraryScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(18),
       margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(.06),
+        color: Colors.red.withValues(alpha: .06),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.red.withOpacity(.15),
+          color: Colors.red.withValues(alpha: .15),
         ),
       ),
       child: Row(
@@ -809,8 +809,8 @@ class LibraryScreen extends ConsumerWidget {
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor:
-                    AppColors.primary.withOpacity(.12),
-                    child: Icon(
+                    AppColors.primary.withValues(alpha: .12),
+                    child: const Icon(
                       Icons.menu_book_rounded,
                       color: AppColors.primary,
                     ),
@@ -971,7 +971,7 @@ class _AddBookDialogState extends ConsumerState<_AddBookDialog> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(.06),
+                      color: Colors.red.withValues(alpha: .06),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -992,7 +992,7 @@ class _AddBookDialogState extends ConsumerState<_AddBookDialog> {
                     }
 
                     return DropdownButtonFormField<int>(
-                      value: _selectedClassId,
+                      initialValue: _selectedClassId,
                       decoration: const InputDecoration(
                         labelText: 'Class *',
                         prefixIcon:
@@ -1163,13 +1163,13 @@ class _StatCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.black.withOpacity(.05),
+          color: Colors.black.withValues(alpha: .05),
         ),
         boxShadow: [
           BoxShadow(
             blurRadius: 18,
             offset: const Offset(0, 6),
-            color: Colors.black.withOpacity(.04),
+            color: Colors.black.withValues(alpha: .04),
           ),
         ],
       ),
@@ -1178,7 +1178,7 @@ class _StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: item.color.withOpacity(.10),
+              color: item.color.withValues(alpha: .10),
               borderRadius: BorderRadius.circular(13),
             ),
             child: Icon(
@@ -1246,7 +1246,7 @@ class _ClassCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.black.withOpacity(.06),
+              color: Colors.black.withValues(alpha: .06),
             ),
           ),
           child: Row(
@@ -1255,10 +1255,10 @@ class _ClassCard extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(.10),
+                  color: AppColors.primary.withValues(alpha: .10),
                   borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.class_rounded,
                   color: AppColors.primary,
                 ),
@@ -1330,13 +1330,13 @@ class _BookCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.black.withOpacity(.06),
+          color: Colors.black.withValues(alpha: .06),
         ),
         boxShadow: [
           BoxShadow(
             blurRadius: 16,
             offset: const Offset(0, 5),
-            color: Colors.black.withOpacity(.035),
+            color: Colors.black.withValues(alpha: .035),
           ),
         ],
       ),
@@ -1349,7 +1349,7 @@ class _BookCard extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(.10),
+                  color: AppColors.primary.withValues(alpha: .10),
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: const Icon(
@@ -1417,7 +1417,7 @@ class _BookCard extends StatelessWidget {
               vertical: 7,
             ),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(.035),
+              color: Colors.black.withValues(alpha: .035),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Row(
@@ -1475,7 +1475,7 @@ class _BookCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Colors.black.withOpacity(.06),
+              backgroundColor: Colors.black.withValues(alpha: .06),
             ),
           ),
         ],
