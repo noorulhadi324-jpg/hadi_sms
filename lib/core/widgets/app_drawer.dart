@@ -153,8 +153,16 @@ class AppDrawer extends ConsumerWidget {
                   _menuItem(
                     context,
                     currentRoute,
-                    'Fees & Finance',
-                    Icons.payments_rounded,
+                    'Fees & Challan',
+                    Icons.receipt_long_rounded,
+                    '/fee',
+                  ),
+
+                  _menuItem(
+                    context,
+                    currentRoute,
+                    'Finance',
+                    Icons.account_balance_wallet_rounded,
                     '/finance',
                   ),
 
@@ -239,7 +247,7 @@ class AppDrawer extends ConsumerWidget {
             // =====================================================
 
             _BottomActions(
-              onFees: () => _go(context, '/finance'),
+              onFees: () => _go(context, '/fee'),
               onProfile: () => _go(context, '/profile'),
               onSchool: () => _go(context, '/settings'),
               onSettings: () => _go(context, '/settings'),

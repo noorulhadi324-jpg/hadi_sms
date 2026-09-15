@@ -85,6 +85,130 @@ class _FeesScreenState extends State<FeesScreen> {
     finally { if (mounted) setState(() => _working = false); }
   }
 
+  Future<void> _createOtherChallan() async {
+    final typeController = TextEditingController(text: 'Admission Fee');
+    final referenceController = TextEditingController();
+    final amountController = TextEditingController();
+    final dueDateController = TextEditingController(text: DateTime.now().toIso8601String().substring(0, 10));
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) {
+        String selectedType = 'Admission Fee';
+        const types = ['Admission Fee', 'Exam Fee', 'Transport Fee', 'Fine / Other'];
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Create Other Challan'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedType,
+                    decoration: const InputDecoration(labelText: 'Challan type'),
+                    items: types.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          selectedType = value;
+                          typeController.text = value;
+                        });
+                      }
+                    },
+                  ),
+                  TextField(controller: referenceController, decoration: const InputDecoration(labelText: 'Student / reference (optional)')),
+                  TextField(controller: amountController, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Amount', prefixText: 'Rs. ')),
+                  TextField(controller: dueDateController, decoration: const InputDecoration(labelText: 'Due date (YYYY-MM-DD)')),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+              FilledButton(
+                onPressed: () {
+                  final amount = double.tryParse(amountController.text.trim());
+                  if (amount == null || amount <= 0) return;
+                  Navigator.pop(context, {
+                    'type': selectedType,
+                    'reference': referenceController.text.trim(),
+                    'amount': amount.toStringAsFixed(2),
+                    'dueDate': dueDateController.text.trim(),
+                  });
+                },
+                child: const Text('Create PDF'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    typeController.dispose();
+    referenceController.dispose();
+    amountController.dispose();
+    dueDateController.dispose();
+    if (result == null) return;
+    try {
+      final file = await ReportExportService.exportPdf(
+        title: result['type'] ?? 'Other Challan',
+        schoolName: _schoolName,
+        headers: const ['Type', 'Student / Reference', 'Amount', 'Due Date'],
+        rows: [[result['type'] ?? '-', result['reference']?.isEmpty == true ? '-' : result['reference']!, 'Rs. ${result['amount']}', result['dueDate'] ?? '-']],
+      );
+      await ReportExportService.shareFile(file, subject: result['type'] ?? 'Other Challan');
+    } catch (e) {
+      _message('Other challan failed: $e');
+    }
+  }
+
+  Future<void> _exportChallan(Map<String, dynamic> fee) async {
+    try {
+      final student = _students.cast<Map<String, dynamic>>().firstWhere(
+        (s) => '${s['id']}' == '${fee['student_id']}',
+        orElse: () => <String, dynamic>{},
+      );
+      final file = await ReportExportService.exportPdf(
+        title: 'Fee Challan',
+        schoolName: _schoolName,
+        headers: const ['Student', 'Admission No.', 'Fee Month', 'Due Date', 'Amount', 'Status'],
+        rows: [[
+          _studentName(fee['student_id']),
+          '${student['admission_number'] ?? '-'}',
+          '${fee['fee_month'] ?? '-'}',
+          '${fee['due_date'] ?? '-'}',
+          'Rs. ${fee['amount'] ?? 0}',
+          '${fee['status'] ?? 'unpaid'}',
+        ]],
+      );
+      await ReportExportService.shareFile(file, subject: 'Fee Challan');
+    } catch (e) {
+      _message('Challan generation failed: $e');
+    }
+  }
+
+  Future<void> _exportPendingChallans() async {
+    try {
+      final pending = _fees.where((fee) => '${fee['status']}'.toLowerCase() != 'paid').toList();
+      if (pending.isEmpty) {
+        _message('No pending fee challans found.');
+        return;
+      }
+      final file = await ReportExportService.exportPdf(
+        title: 'Pending Fee Challans',
+        schoolName: _schoolName,
+        headers: const ['Student', 'Fee Month', 'Due Date', 'Amount', 'Status'],
+        rows: pending.map((fee) => [
+          _studentName(fee['student_id']),
+          '${fee['fee_month'] ?? '-'}',
+          '${fee['due_date'] ?? '-'}',
+          'Rs. ${fee['amount'] ?? 0}',
+          '${fee['status'] ?? 'unpaid'}',
+        ]).toList(),
+      );
+      await ReportExportService.shareFile(file, subject: 'Pending Fee Challans');
+    } catch (e) {
+      _message('Challan export failed: $e');
+    }
+  }
+
   Future<void> _export() async {
     try {
       final file = await ReportExportService.exportExcel(title: 'Fee Register', headers: const ['Student','Fee Month','Due Date','Amount','Status'], rows: _fees.map((f) => [_studentName(f['student_id']), '${f['fee_month'] ?? ''}', '${f['due_date'] ?? ''}', '${f['amount'] ?? 0}', '${f['status'] ?? ''}']).toList(), schoolName: _schoolName);
@@ -96,9 +220,9 @@ class _FeesScreenState extends State<FeesScreen> {
 
   @override
   Widget build(BuildContext context) => MainWrapper(child: RefreshIndicator(onRefresh: _load, child: ListView(physics: const AlwaysScrollableScrollPhysics(), padding: const EdgeInsets.fromLTRB(16,20,16,32), children: [
-    Row(children: [const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Fees & Finance', style: TextStyle(fontSize:25,fontWeight:FontWeight.w900)), SizedBox(height:4), Text('Live fees, automatic monthly generation, payments and receipts.', style: TextStyle(color:AppColors.textSecondary,fontSize:13))])), if (_working) const SizedBox(width:24,height:24,child:CircularProgressIndicator(strokeWidth:2))]),
+    Row(children: [const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Fees & Challan', style: TextStyle(fontSize:25,fontWeight:FontWeight.w900)), SizedBox(height:4), Text('Live fees, automatic monthly generation, payments and receipts.', style: TextStyle(color:AppColors.textSecondary,fontSize:13))])), if (_working) const SizedBox(width:24,height:24,child:CircularProgressIndicator(strokeWidth:2))]),
     const SizedBox(height:18),
-    Wrap(spacing:8,runSpacing:8,children: [FilledButton.icon(onPressed:_working?null:_generateCurrentMonth,icon:const Icon(Icons.auto_awesome_rounded),label:const Text('Generate Current Month')), OutlinedButton.icon(onPressed:_working?null:_export,icon:const Icon(Icons.table_view_rounded),label:const Text('Export Excel'))]),
+    Wrap(spacing:8,runSpacing:8,children: [FilledButton.icon(onPressed:_working?null:_generateCurrentMonth,icon:const Icon(Icons.auto_awesome_rounded),label:const Text('Generate Current Month')), OutlinedButton.icon(onPressed:_working?null:_export,icon:const Icon(Icons.table_view_rounded),label:const Text('Export Excel')), OutlinedButton.icon(onPressed:_working?null:_exportPendingChallans,icon:const Icon(Icons.picture_as_pdf_rounded),label:const Text('Pending Challans')), OutlinedButton.icon(onPressed:_working?null:_createOtherChallan,icon:const Icon(Icons.add_card_rounded),label:const Text('Other Challan'))]),
     const SizedBox(height:18),
     if (_loading) const Center(child:Padding(padding:EdgeInsets.all(40),child:CircularProgressIndicator())) else ...[_stats(),const SizedBox(height:18),_list()],
   ])));
@@ -109,5 +233,5 @@ class _FeesScreenState extends State<FeesScreen> {
     return LayoutBuilder(builder:(context,c){ final n=c.maxWidth>=900?4:c.maxWidth>=560?2:1; final cards=[_stat('Records','${_fees.length}',Icons.receipt_long_rounded),_stat('Assigned','Rs. ${total.toStringAsFixed(0)}',Icons.account_balance_wallet_rounded),_stat('Collected','Rs. ${paid.toStringAsFixed(0)}',Icons.check_circle_rounded),_stat('Pending','Rs. ${(total-paid).toStringAsFixed(0)}',Icons.pending_actions_rounded)]; if(n==1)return Column(children:cards.map((x)=>Padding(padding:const EdgeInsets.only(bottom:10),child:x)).toList()); return GridView.count(crossAxisCount:n,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2.5,children:cards); });
   }
   Widget _stat(String t,String v,IconData i)=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Row(children:[Icon(i,color:AppColors.primary),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:const TextStyle(color:AppColors.textSecondary,fontSize:12)),Text(v,style:const TextStyle(fontWeight:FontWeight.w900,fontSize:18))]))])));
-  Widget _list()=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Student Fee Register',style:TextStyle(fontWeight:FontWeight.w800,fontSize:17)),const SizedBox(height:12),if(_fees.isEmpty)const Padding(padding:EdgeInsets.all(28),child:Center(child:Text('No fee records yet. Use Generate Current Month.'))) else ..._fees.take(100).map((f)=>ListTile(contentPadding:EdgeInsets.zero,leading:CircleAvatar(child:Text(_studentName(f['student_id']).substring(0,1).toUpperCase())),title:Text(_studentName(f['student_id']),style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text('Month: ${f['fee_month']??'-'} • Due: ${f['due_date']??'-'}'),trailing:Wrap(spacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[Text('Rs. ${f['amount']??0}',style:const TextStyle(fontWeight:FontWeight.w800)),Chip(label:Text('${f['status']??'unpaid'}')),if('${f['status']}'.toLowerCase()!='paid')IconButton(onPressed:_working?null:()=>_collectPayment(f),icon:const Icon(Icons.payments_rounded),tooltip:'Collect payment')])))])));
+  Widget _list()=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Student Fee Register',style:TextStyle(fontWeight:FontWeight.w800,fontSize:17)),const SizedBox(height:12),if(_fees.isEmpty)const Padding(padding:EdgeInsets.all(28),child:Center(child:Text('No fee records yet. Use Generate Current Month.'))) else ..._fees.take(100).map((f)=>ListTile(contentPadding:EdgeInsets.zero,leading:CircleAvatar(child:Text(_studentName(f['student_id']).substring(0,1).toUpperCase())),title:Text(_studentName(f['student_id']),style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text('Month: ${f['fee_month']??'-'} • Due: ${f['due_date']??'-'}'),trailing:Wrap(spacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[Text('Rs. ${f['amount']??0}',style:const TextStyle(fontWeight:FontWeight.w800)),Chip(label:Text('${f['status']??'unpaid'}')),IconButton(onPressed:_working?null:()=>_exportChallan(f),icon:const Icon(Icons.print_rounded),tooltip:'Print challan'),if('${f['status']}'.toLowerCase()!='paid')IconButton(onPressed:_working?null:()=>_collectPayment(f),icon:const Icon(Icons.payments_rounded),tooltip:'Collect payment')])))])));
 }

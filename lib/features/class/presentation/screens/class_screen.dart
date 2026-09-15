@@ -1858,8 +1858,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 BoxDecoration(
                   color: AppColors
                       .primary
-                      .withValues(
-                    alpha: .10,
+                      .withValues(alpha: 
+                    .10,
                   ),
                   borderRadius:
                   BorderRadius.circular(
@@ -2150,8 +2150,8 @@ class _ClassStudentsSheetState
                   BoxDecoration(
                     color: AppColors
                         .primary
-                        .withValues(
-                      alpha: .10,
+                        .withValues(alpha: 
+                      .10,
                     ),
                     borderRadius:
                     BorderRadius
@@ -2486,8 +2486,8 @@ class _ClassStudentsSheetState
                         backgroundColor:
                         AppColors
                             .primary
-                            .withValues(
-                          alpha: .10,
+                            .withValues(alpha: 
+                          .10,
                         ),
                         child:
                         Text(
@@ -2540,13 +2540,13 @@ class _ClassStudentsSheetState
                               color: active
                                   ? AppColors
                                   .success
-                                  .withValues(
-                                alpha: .10,
+                                  .withValues(alpha: 
+                                .10,
                               )
                                   : AppColors
                                   .error
-                                  .withValues(
-                                alpha: .10,
+                                  .withValues(alpha: 
+                                .10,
                               ),
                               borderRadius:
                               BorderRadius

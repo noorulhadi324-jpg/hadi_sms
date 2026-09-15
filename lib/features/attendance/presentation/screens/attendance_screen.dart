@@ -305,7 +305,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-
   // ============================================================
   // TODAY
   // ============================================================
@@ -943,8 +942,8 @@ class _ClassCard
                     BoxDecoration(
                       color: AppColors
                           .primary
-                          .withValues(
-                        alpha: .10,
+                          .withValues(alpha: 
+                        .10,
                       ),
                       borderRadius:
                       BorderRadius
@@ -1139,8 +1138,8 @@ class _ClassCard
       decoration:
       BoxDecoration(
         color:
-        color.withValues(
-          alpha: .07,
+        color.withValues(alpha: 
+          .07,
         ),
         borderRadius:
         BorderRadius.circular(
@@ -1148,8 +1147,8 @@ class _ClassCard
         ),
         border: Border.all(
           color:
-          color.withValues(
-            alpha: .14,
+          color.withValues(alpha: 
+            .14,
           ),
         ),
       ),
@@ -2238,8 +2237,8 @@ class _ClassAttendanceScreenState
       decoration:
       BoxDecoration(
         color:
-        color.withValues(
-          alpha: .06,
+        color.withValues(alpha: 
+          .06,
         ),
         borderRadius:
         BorderRadius.circular(
@@ -2248,8 +2247,8 @@ class _ClassAttendanceScreenState
         border:
         Border.all(
           color:
-          color.withValues(
-            alpha: .12,
+          color.withValues(alpha: 
+            .12,
           ),
         ),
       ),
@@ -2271,8 +2270,8 @@ class _ClassAttendanceScreenState
             style:
             TextStyle(
               color:
-              color.withValues(
-                alpha: .75,
+              color.withValues(alpha: 
+                .75,
               ),
               fontWeight:
               FontWeight

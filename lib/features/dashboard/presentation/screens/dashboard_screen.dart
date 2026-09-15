@@ -1331,44 +1331,26 @@ class _QuickAccessGrid
   @override
   Widget build(BuildContext context) {
     final actions = [
-      const _QuickAction(
-        'Students',
-        Icons.people_alt_rounded,
-        AppColors.primary,
-        '/student',
-      ),
-      const _QuickAction(
-        'Attendance',
-        Icons.fact_check_rounded,
-        AppColors.success,
-        '/attendance',
-      ),
-      const _QuickAction(
-        'Finance',
-        Icons.account_balance_wallet_rounded,
-        AppColors.warning,
-        '/finance',
-      ),
-      const _QuickAction(
-        'Examinations',
-        Icons.quiz_rounded,
-        Color(0xFFEC4899),
-        '/examination',
-      ),
-      const _QuickAction(
-        'Notices',
-        Icons.notifications_rounded,
-        Color(0xFF7C3AED),
-        '/notification',
-      ),
-      const _QuickAction(
-        'Teachers',
-        Icons.school_rounded,
-        AppColors.info,
-        '/teacher',
-      ),
+      const _QuickAction('Students', Icons.people_alt_rounded, AppColors.primary, '/student'),
+      const _QuickAction('Teachers & Staff', Icons.school_rounded, AppColors.info, '/teacher'),
+      const _QuickAction('Smart Attendance', Icons.fact_check_rounded, AppColors.success, '/attendance'),
+      const _QuickAction('Fees & Challan', Icons.receipt_long_rounded, AppColors.warning, '/fee'),
+      const _QuickAction('Income & Expense', Icons.account_balance_wallet_rounded, Color(0xFF2563EB), '/finance'),
+      const _QuickAction('Accounting & Ledger', Icons.account_balance_rounded, Color(0xFF0F766E), '/accounting'),
+      const _QuickAction('Exams & Results', Icons.quiz_rounded, Color(0xFFEC4899), '/examination'),
+      const _QuickAction('Result Cards', Icons.workspace_premium_rounded, Color(0xFF7C3AED), '/result'),
+      const _QuickAction('Assignments', Icons.assignment_rounded, Color(0xFFEA580C), '/assignment'),
+      const _QuickAction('Homework', Icons.menu_book_rounded, Color(0xFF0891B2), '/homework'),
+      const _QuickAction('Classes & Timetable', Icons.class_rounded, Color(0xFF4F46E5), '/academic'),
+      const _QuickAction('Parent Communication', Icons.forum_rounded, Color(0xFFDB2777), '/communication'),
+      const _QuickAction('Inventory & Stationery', Icons.inventory_2_rounded, Color(0xFF9333EA), '/inventory'),
+      const _QuickAction('Payroll', Icons.payments_rounded, Color(0xFFB45309), '/payroll'),
+      const _QuickAction('Transport', Icons.directions_bus_rounded, Color(0xFF15803D), '/transport'),
+      const _QuickAction('Library', Icons.local_library_rounded, Color(0xFF0369A1), '/library'),
+      const _QuickAction('Reports & Analytics', Icons.insights_rounded, Color(0xFF475569), '/reports'),
+      const _QuickAction('Notifications', Icons.notifications_rounded, Color(0xFFBE123C), '/notification'),
+      const _QuickAction('Secure Database', Icons.cloud_done_rounded, Color(0xFF10B981), '/settings'),
     ];
-
     return LayoutBuilder(
       builder: (_, constraints) {
         final columns =
