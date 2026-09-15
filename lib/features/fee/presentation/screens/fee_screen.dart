@@ -103,7 +103,7 @@ class _FeesScreenState extends State<FeesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: const InputDecoration(labelText: 'Challan type'),
                     items: types.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
                     onChanged: (value) {
