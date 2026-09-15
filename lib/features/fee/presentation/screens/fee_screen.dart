@@ -85,6 +85,80 @@ class _FeesScreenState extends State<FeesScreen> {
     finally { if (mounted) setState(() => _working = false); }
   }
 
+  Future<void> _createOtherChallan() async {
+    final typeController = TextEditingController(text: 'Admission Fee');
+    final referenceController = TextEditingController();
+    final amountController = TextEditingController();
+    final dueDateController = TextEditingController(text: DateTime.now().toIso8601String().substring(0, 10));
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) {
+        String selectedType = 'Admission Fee';
+        const types = ['Admission Fee', 'Exam Fee', 'Transport Fee', 'Fine / Other'];
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Create Other Challan'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedType,
+                    decoration: const InputDecoration(labelText: 'Challan type'),
+                    items: types.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          selectedType = value;
+                          typeController.text = value;
+                        });
+                      }
+                    },
+                  ),
+                  TextField(controller: referenceController, decoration: const InputDecoration(labelText: 'Student / reference (optional)')),
+                  TextField(controller: amountController, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Amount', prefixText: 'Rs. ')),
+                  TextField(controller: dueDateController, decoration: const InputDecoration(labelText: 'Due date (YYYY-MM-DD)')),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+              FilledButton(
+                onPressed: () {
+                  final amount = double.tryParse(amountController.text.trim());
+                  if (amount == null || amount <= 0) return;
+                  Navigator.pop(context, {
+                    'type': selectedType,
+                    'reference': referenceController.text.trim(),
+                    'amount': amount.toStringAsFixed(2),
+                    'dueDate': dueDateController.text.trim(),
+                  });
+                },
+                child: const Text('Create PDF'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    typeController.dispose();
+    referenceController.dispose();
+    amountController.dispose();
+    dueDateController.dispose();
+    if (result == null) return;
+    try {
+      final file = await ReportExportService.exportPdf(
+        title: result['type'] ?? 'Other Challan',
+        schoolName: _schoolName,
+        headers: const ['Type', 'Student / Reference', 'Amount', 'Due Date'],
+        rows: [[result['type'] ?? '-', result['reference']?.isEmpty == true ? '-' : result['reference']!, 'Rs. ${result['amount']}', result['dueDate'] ?? '-']],
+      );
+      await ReportExportService.shareFile(file, subject: result['type'] ?? 'Other Challan');
+    } catch (e) {
+      _message('Other challan failed: $e');
+    }
+  }
+
   Future<void> _exportChallan(Map<String, dynamic> fee) async {
     try {
       final student = _students.cast<Map<String, dynamic>>().firstWhere(
@@ -148,7 +222,7 @@ class _FeesScreenState extends State<FeesScreen> {
   Widget build(BuildContext context) => MainWrapper(child: RefreshIndicator(onRefresh: _load, child: ListView(physics: const AlwaysScrollableScrollPhysics(), padding: const EdgeInsets.fromLTRB(16,20,16,32), children: [
     Row(children: [const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Fees & Finance', style: TextStyle(fontSize:25,fontWeight:FontWeight.w900)), SizedBox(height:4), Text('Live fees, automatic monthly generation, payments and receipts.', style: TextStyle(color:AppColors.textSecondary,fontSize:13))])), if (_working) const SizedBox(width:24,height:24,child:CircularProgressIndicator(strokeWidth:2))]),
     const SizedBox(height:18),
-    Wrap(spacing:8,runSpacing:8,children: [FilledButton.icon(onPressed:_working?null:_generateCurrentMonth,icon:const Icon(Icons.auto_awesome_rounded),label:const Text('Generate Current Month')), OutlinedButton.icon(onPressed:_working?null:_export,icon:const Icon(Icons.table_view_rounded),label:const Text('Export Excel')), OutlinedButton.icon(onPressed:_working?null:_exportPendingChallans,icon:const Icon(Icons.picture_as_pdf_rounded),label:const Text('Pending Challans'))]),
+    Wrap(spacing:8,runSpacing:8,children: [FilledButton.icon(onPressed:_working?null:_generateCurrentMonth,icon:const Icon(Icons.auto_awesome_rounded),label:const Text('Generate Current Month')), OutlinedButton.icon(onPressed:_working?null:_export,icon:const Icon(Icons.table_view_rounded),label:const Text('Export Excel')), OutlinedButton.icon(onPressed:_working?null:_exportPendingChallans,icon:const Icon(Icons.picture_as_pdf_rounded),label:const Text('Pending Challans')), OutlinedButton.icon(onPressed:_working?null:_createOtherChallan,icon:const Icon(Icons.add_card_rounded),label:const Text('Other Challan'))]),
     const SizedBox(height:18),
     if (_loading) const Center(child:Padding(padding:EdgeInsets.all(40),child:CircularProgressIndicator())) else ...[_stats(),const SizedBox(height:18),_list()],
   ])));
