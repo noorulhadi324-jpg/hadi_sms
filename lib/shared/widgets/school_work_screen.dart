@@ -420,7 +420,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                     const SizedBox(height: 12),
                     if (subjectNames.isNotEmpty)
                       DropdownButtonFormField<String>(
-                        value: selectedSubject.isEmpty ? null : selectedSubject,
+                        initialValue: selectedSubject.isEmpty ? null : selectedSubject,
                         decoration: const InputDecoration(
                           labelText: 'Subject *',
                           prefixIcon: Icon(Icons.menu_book_outlined),
@@ -448,7 +448,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                       children: [
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedClass.isEmpty ? null : selectedClass,
+                            initialValue: selectedClass.isEmpty ? null : selectedClass,
                             decoration: const InputDecoration(
                               labelText: 'Class *',
                               prefixIcon: Icon(Icons.class_outlined),
@@ -468,7 +468,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedSection.isEmpty ? null : selectedSection,
+                            initialValue: selectedSection.isEmpty ? null : selectedSection,
                             decoration: const InputDecoration(
                               labelText: 'Section',
                               prefixIcon: Icon(Icons.segment_rounded),
@@ -488,7 +488,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: audience,
+                      initialValue: audience,
                       decoration: const InputDecoration(
                         labelText: 'Give to',
                         prefixIcon: Icon(Icons.groups_2_outlined),
@@ -574,7 +574,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: status,
+                      initialValue: status,
                       decoration: const InputDecoration(
                         labelText: 'Status',
                         prefixIcon: Icon(Icons.flag_outlined),
