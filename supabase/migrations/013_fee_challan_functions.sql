@@ -65,7 +65,7 @@ language plpgsql
 security invoker
 set search_path = public
 as $$
-declare v_school integer; v_count integer := 0; v_category record;
+declare v_school integer; v_count integer := 0; v_inserted integer := 0; v_category record;
 begin
   select school_id into v_school from profiles where id = auth.uid();
   if v_school is null then raise exception 'School profile is not linked'; end if;
@@ -75,7 +75,7 @@ begin
            (p_fee_month + interval '10 days')::date,p_fee_month
     from students s where s.school_id=v_school and coalesce(s.is_active,true)
     on conflict (student_id,fee_category_id,fee_month) do nothing;
-    get diagnostics v_count = v_count + row_count;
+    get diagnostics v_inserted = row_count;\n    v_count := v_count + v_inserted;
   end loop;
   return v_count;
 end $$;
