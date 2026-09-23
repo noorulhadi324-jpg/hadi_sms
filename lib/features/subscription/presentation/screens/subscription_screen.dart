@@ -86,6 +86,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     if (status == 'active') return 'ACTIVE PLAN';
     if (status == 'demo') return 'DEMO PLAN';
     if (status == 'expired') return 'DEMO ENDED';
+    final trialEnd = DateTime.tryParse(_subscription?['trial_ends_at']?.toString() ?? '');
+    if (status == 'demo' && trialEnd != null && !trialEnd.isAfter(DateTime.now())) return 'DEMO ENDED';
     return 'NO ACTIVE PLAN';
   }
 
@@ -152,7 +154,7 @@ class _StatusCard extends StatelessWidget {
         ? 'Your school subscription is active.'
         : subscription?['status'] == 'demo' && end != null && end.isAfter(DateTime.now())
             ? 'Demo ends ${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}.'
-            : subscription == null
+            : subscription?['status'] == null
                 ? 'Start a two-day demo to explore the app.'
                 : 'The demo period has ended. Choose a plan to request an upgrade.';
     return Container(
