@@ -363,6 +363,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
                         try {
                           final wasPaid = existing != null && _status(existing) == 'paid';
+                          final existingPaidAt = existing == null ? null : existing['paid_at'];
                           final payload = <String, dynamic>{
                             'school_id': schoolId,
                             'employee_name': employee,
@@ -373,8 +374,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                             'deductions': deduction,
                             'status': selectedStatus,
                             'paid_at': selectedStatus == 'paid'
-                                ? (wasPaid && existing?['paid_at'] != null
-                                    ? existing!['paid_at']
+                                ? (wasPaid && existingPaidAt != null
+                                    ? existingPaidAt
                                     : DateTime.now().toUtc().toIso8601String())
                                 : null,
                             'notes': notes.isEmpty ? null : notes,
