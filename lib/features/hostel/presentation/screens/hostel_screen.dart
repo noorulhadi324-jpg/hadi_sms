@@ -123,7 +123,7 @@ class _HostelScreenState extends State<HostelScreen> {
                 TextField(controller: warden, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(labelText: 'Warden name', prefixIcon: Icon(Icons.person_outline))),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: status,
+                  initialValue: status,
                   decoration: const InputDecoration(labelText: 'Status', prefixIcon: Icon(Icons.task_alt_outlined)),
                   items: const [
                     DropdownMenuItem(value: 'active', child: Text('Active')),
