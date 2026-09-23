@@ -361,29 +361,27 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return null;
   }
 
-  double _feePaidForAssignment(
-      Map<String, dynamic> fee,
-      ) {
+  double _feePaidForAssignment(Map<String, dynamic> fee) {
     double paid = 0;
-
-    final studentId = fee['student_id'];
-    final categoryId = fee['fee_category_id'];
-
     for (final payment in _payments) {
-      if (payment['student_id'].toString() ==
-          studentId.toString()) {
-        if (payment['fee_category_id'].toString() ==
-            categoryId.toString()) {
-          if (_isPaidStatus(
-            payment['status']?.toString().toLowerCase(),
-          )) {
-            paid += _toDouble(payment['amount']);
-          }
-        }
+      if (!_isPaidStatus(payment['status']?.toString().toLowerCase())) continue;
+      if ('${payment['student_fee_id']}' == '${fee['id']}') {
+        paid += _toDouble(payment['amount']);
+        continue;
+      }
+
+      // Legacy rows without a fee id are only assigned within the same month.
+      final feeMonth = DateTime.tryParse(fee['fee_month']?.toString() ?? '');
+      final paymentDate = DateTime.tryParse(payment['payment_date']?.toString() ?? '');
+      final sameMonth = feeMonth != null && paymentDate != null &&
+          feeMonth.year == paymentDate.year && feeMonth.month == paymentDate.month;
+      if (payment['student_fee_id'] == null && sameMonth &&
+          '${payment['student_id']}' == '${fee['student_id']}' &&
+          '${payment['fee_category_id']}' == '${fee['fee_category_id']}') {
+        paid += _toDouble(payment['amount']);
       }
     }
-
-    return paid;
+    return paid.clamp(0, _toDouble(fee['amount'])).toDouble();
   }
 
   double _studentTotalFee(dynamic studentId) {
