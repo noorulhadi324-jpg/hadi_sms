@@ -20,6 +20,8 @@ class _FeesScreenState extends State<FeesScreen> {
   String _schoolName = 'HADI SMS';
   List<Map<String, dynamic>> _fees = [];
   List<Map<String, dynamic>> _students = [];
+  List<Map<String, dynamic>> _payments = [];
+  List<Map<String, dynamic>> _otherChallans = [];
 
   @override
   void initState() { super.initState(); _load(); }
@@ -39,9 +41,11 @@ class _FeesScreenState extends State<FeesScreen> {
       final data = await Future.wait([
         _client.from('student_fees').select('id,student_id,fee_category_id,amount,due_date,status,fee_month').eq('school_id', _schoolId!).order('fee_month', ascending: false),
         _client.from('students').select('id,full_name,admission_number,class_name,section_name').eq('school_id', _schoolId!).order('full_name'),
+        _client.from('fee_payments').select('id,student_fee_id,amount,status,receipt_number,payment_date').eq('school_id', _schoolId!).eq('status', 'paid'),
+        _client.from('school_challans').select('id,challan_number,challan_type,reference,amount,paid_amount,due_date,status').eq('school_id', _schoolId!).neq('status', 'void').order('due_date'),
       ]);
       if (!mounted) return;
-      setState(() { _fees = List<Map<String,dynamic>>.from(data[0] as List); _students = List<Map<String,dynamic>>.from(data[1] as List); _loading = false; });
+      setState(() { _fees = List<Map<String,dynamic>>.from(data[0] as List); _students = List<Map<String,dynamic>>.from(data[1] as List); _payments = List<Map<String,dynamic>>.from(data[2] as List); _otherChallans = List<Map<String,dynamic>>.from(data[3] as List); _loading = false; });
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -54,6 +58,13 @@ class _FeesScreenState extends State<FeesScreen> {
     return 'Student #$id';
   }
   double _num(dynamic v) => v is num ? v.toDouble() : double.tryParse('$v') ?? 0;
+
+  double _paidForFee(Map<String, dynamic> fee) => _payments
+      .where((payment) => '${payment['student_fee_id']}' == '${fee['id']}')
+      .fold<double>(0, (total, payment) => total + _num(payment['amount']));
+
+  double _balanceForFee(Map<String, dynamic> fee) =>
+      (_num(fee['amount']) - _paidForFee(fee)).clamp(0, double.infinity).toDouble();
 
   Future<void> _generateCurrentMonth() async {
     if (_working) return;
@@ -68,10 +79,12 @@ class _FeesScreenState extends State<FeesScreen> {
   }
 
   Future<void> _collectPayment(Map<String,dynamic> fee) async {
-    _amountController.text = '${fee['amount'] ?? ''}';
+    final balance = _balanceForFee(fee);
+    if (balance <= 0) return;
+    _amountController.text = balance.toStringAsFixed(2);
     final amount = await showDialog<double>(context: context, builder: (context) => AlertDialog(
       title: Text('Collect Fee — ${_studentName(fee['student_id'])}'),
-      content: TextField(controller: _amountController, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Payment amount', prefixText: 'Rs. ')),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Remaining: Rs. ${balance.toStringAsFixed(2)}'), const SizedBox(height: 12), TextField(controller: _amountController, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Payment amount', prefixText: 'Rs. '))]),
       actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.pop(context, double.tryParse(_amountController.text.trim())), child: const Text('Continue'))],
     ));
     if (amount == null || amount <= 0) return;
@@ -241,9 +254,10 @@ class _FeesScreenState extends State<FeesScreen> {
   ])));
 
   Widget _stats() {
-    final total = _fees.fold<double>(0,(s,f)=>s+_num(f['amount']));
-    final paid = _fees.where((f)=>'${f['status']}'.toLowerCase()=='paid').fold<double>(0,(s,f)=>s+_num(f['amount']));
-    return LayoutBuilder(builder:(context,c){ final n=c.maxWidth>=900?4:c.maxWidth>=560?2:1; final cards=[_stat('Records','${_fees.length}',Icons.receipt_long_rounded),_stat('Assigned','Rs. ${total.toStringAsFixed(0)}',Icons.account_balance_wallet_rounded),_stat('Collected','Rs. ${paid.toStringAsFixed(0)}',Icons.check_circle_rounded),_stat('Pending','Rs. ${(total-paid).toStringAsFixed(0)}',Icons.pending_actions_rounded)]; if(n==1)return Column(children:cards.map((x)=>Padding(padding:const EdgeInsets.only(bottom:10),child:x)).toList()); return GridView.count(crossAxisCount:n,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2.5,children:cards); });
+    final total = _fees.fold<double>(0, (sum, fee) => sum + _num(fee['amount']));
+    final paid = _fees.fold<double>(0, (sum, fee) => sum + _paidForFee(fee));
+    final pending = _fees.fold<double>(0, (sum, fee) => sum + _balanceForFee(fee));
+    return LayoutBuilder(builder:(context,c){ final n=c.maxWidth>=900?4:c.maxWidth>=560?2:1; final cards=[_stat('Records','${_fees.length}',Icons.receipt_long_rounded),_stat('Assigned','Rs. ${total.toStringAsFixed(0)}',Icons.account_balance_wallet_rounded),_stat('Collected','Rs. ${paid.toStringAsFixed(0)}',Icons.check_circle_rounded),_stat('Pending','Rs. ${pending.toStringAsFixed(0)}',Icons.pending_actions_rounded)]; if(n==1)return Column(children:cards.map((x)=>Padding(padding:const EdgeInsets.only(bottom:10),child:x)).toList()); return GridView.count(crossAxisCount:n,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2.5,children:cards); });
   }
   Future<void> _recordOtherChallanPayment(Map<String, dynamic> challan) async {
     final balance = (_num(challan['amount']) - _num(challan['paid_amount'])).clamp(0, double.infinity).toDouble();
@@ -308,5 +322,5 @@ class _FeesScreenState extends State<FeesScreen> {
       );
 
   Widget _stat(String t,String v,IconData i)=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Row(children:[Icon(i,color:AppColors.primary),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:const TextStyle(color:AppColors.textSecondary,fontSize:12)),Text(v,style:const TextStyle(fontWeight:FontWeight.w900,fontSize:18))]))])));
-  Widget _list()=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Student Fee Register',style:TextStyle(fontWeight:FontWeight.w800,fontSize:17)),const SizedBox(height:12),if(_fees.isEmpty)const Padding(padding:EdgeInsets.all(28),child:Center(child:Text('No fee records yet. Use Generate Current Month.'))) else ..._fees.take(100).map((f)=>ListTile(contentPadding:EdgeInsets.zero,leading:CircleAvatar(child:Text(_studentName(f['student_id']).substring(0,1).toUpperCase())),title:Text(_studentName(f['student_id']),style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text('Month: ${f['fee_month']??'-'} • Due: ${f['due_date']??'-'}'),trailing:Wrap(spacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[Text('Rs. ${f['amount']??0}',style:const TextStyle(fontWeight:FontWeight.w800)),Chip(label:Text('${f['status']??'unpaid'}')),IconButton(onPressed:_working?null:()=>_exportChallan(f),icon:const Icon(Icons.print_rounded),tooltip:'Print challan'),if('${f['status']}'.toLowerCase()!='paid')IconButton(onPressed:_working?null:()=>_collectPayment(f),icon:const Icon(Icons.payments_rounded),tooltip:'Collect payment')])))])));
+  Widget _list()=>Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Student Fee Register',style:TextStyle(fontWeight:FontWeight.w800,fontSize:17)),const SizedBox(height:12),if(_fees.isEmpty)const Padding(padding:EdgeInsets.all(28),child:Center(child:Text('No fee records yet. Use Generate Current Month.'))) else ..._fees.take(100).map((f)=>ListTile(contentPadding:EdgeInsets.zero,leading:CircleAvatar(child:Text(_studentName(f['student_id']).substring(0,1).toUpperCase())),title:Text(_studentName(f['student_id']),style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text('Month: ${f['fee_month']??'-'} • Due: ${f['due_date']??'-'}'),trailing:Wrap(spacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[Text('Due Rs. ${_balanceForFee(f).toStringAsFixed(0)}',style:const TextStyle(fontWeight:FontWeight.w800)),Chip(label:Text(_balanceForFee(f) <= 0 ? 'paid' : _paidForFee(f) > 0 ? 'partial' : '${f['status']??'unpaid'}')),IconButton(onPressed:_working?null:()=>_exportChallan(f),icon:const Icon(Icons.print_rounded),tooltip:'Print challan'),if(_balanceForFee(f)>0)IconButton(onPressed:_working?null:()=>_collectPayment(f),icon:const Icon(Icons.payments_rounded),tooltip:'Collect payment')])))])));
 }
