@@ -24,7 +24,7 @@ void main() {
     test('is school scoped through a dedicated table and required fields', () {
       final config = transportModuleConfig;
 
-      expect(config.table, 'transport_routes');
+      expect(config.table, 'transport_vehicles');
       expect(config.titleColumn, isNotEmpty);
       expect(config.fields.where((field) => field.required), isNotEmpty);
       expect(config.metrics, isNotEmpty);
