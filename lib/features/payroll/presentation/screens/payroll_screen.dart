@@ -277,7 +277,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedStatus,
+                            initialValue: selectedStatus,
                             decoration: decoration('Status', Icons.task_alt_rounded),
                             items: const [
                               DropdownMenuItem(value: 'pending', child: Text('Pending')),
