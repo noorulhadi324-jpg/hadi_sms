@@ -148,10 +148,9 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final end = DateTime.tryParse(subscription?['trial_ends_at']?.toString() ?? '')?.toLocal();
-    final remaining = end == null ? null : end.difference(DateTime.now()).inHours;
     final detail = subscription?['status'] == 'active'
         ? 'Your school subscription is active.'
-        : subscription?['status'] == 'demo' && remaining != null && remaining >= 0
+        : subscription?['status'] == 'demo' && end != null && end.isAfter(DateTime.now())
             ? 'Demo ends ${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}.'
             : subscription == null
                 ? 'Start a two-day demo to explore the app.'
