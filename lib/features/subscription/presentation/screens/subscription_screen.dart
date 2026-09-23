@@ -1,75 +1,201 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/supabase_client.dart';
 
-class SubscriptionScreen extends StatelessWidget {
+class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
 
   static const plans = <_Plan>[
-    _Plan('Starter', 'Rs. 1,000', 'For growing schools', ['50 teachers', '100 students', 'Core school modules'], Icons.rocket_launch_rounded, false),
-    _Plan('Pro', 'Rs. 2,500', 'Most popular choice', ['250 students', 'All core modules', 'Priority support'], Icons.workspace_premium_rounded, true),
-    _Plan('Premium Custom', 'Let’s talk', 'Built around your school', ['Custom user limits', 'Custom modules', 'Guided onboarding'], Icons.auto_awesome_rounded, false),
-    _Plan('Custom Budget', 'Flexible', 'A plan within your budget', ['Flexible limits', 'Choose features', 'Scalable anytime'], Icons.tune_rounded, false),
+    _Plan('Starter', 'Rs. 1,000', 'starter', 'For growing schools', ['50 teachers', '100 students', 'Core school modules'], Icons.rocket_launch_rounded, false),
+    _Plan('Pro', 'Rs. 2,500', 'pro', 'Most popular choice', ['250 students', 'All core modules', 'Priority support'], Icons.workspace_premium_rounded, true),
+    _Plan('Premium Custom', 'Let’s talk', 'premium_custom', 'Built around your school', ['Custom user limits', 'Custom modules', 'Guided onboarding'], Icons.auto_awesome_rounded, false),
+    _Plan('Custom Budget', 'Flexible', 'custom_budget', 'A plan within your budget', ['Flexible limits', 'Choose features', 'Scalable anytime'], Icons.tune_rounded, false),
   ];
+
+  @override
+  State<SubscriptionScreen> createState() => _SubscriptionScreenState();
+}
+
+class _SubscriptionScreenState extends State<SubscriptionScreen> {
+  final _client = SupabaseConfig.client;
+  int? _schoolId;
+  Map<String, dynamic>? _subscription;
+  bool _loading = true;
+  bool _working = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (mounted) setState(() { _loading = true; _error = null; });
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) throw Exception('Please log in again.');
+      final profile = await _client.from('profiles').select('school_id').eq('id', userId).maybeSingle();
+      final rawId = profile?['school_id'];
+      final schoolId = rawId is num ? rawId.toInt() : int.tryParse(rawId?.toString() ?? '');
+      if (schoolId == null) throw Exception('Your account is not linked to a school.');
+      final rows = await _client.from('school_subscriptions').select('plan_key,status,trial_started_at,trial_ends_at').eq('school_id', schoolId).maybeSingle();
+      if (!mounted) return;
+      setState(() { _schoolId = schoolId; _subscription = rows; _loading = false; });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() { _error = error.toString().replaceFirst('Exception: ', ''); _loading = false; });
+    }
+  }
+
+  Future<void> _startDemo() async {
+    if (_working) return;
+    setState(() => _working = true);
+    try {
+      await _client.rpc('start_school_demo');
+      await _load();
+      _message('Your two-day demo has started.');
+    } catch (error) {
+      _message('Could not start demo: $error');
+    } finally {
+      if (mounted) setState(() => _working = false);
+    }
+  }
+
+  Future<void> _requestPlan(_Plan plan) async {
+    if (_working) return;
+    setState(() => _working = true);
+    try {
+      await _client.rpc('request_subscription_plan', params: {'p_plan_key': plan.key});
+      _message('Your ${plan.name} request has been sent to the school support team.');
+    } catch (error) {
+      _message('Could not send request: $error');
+    } finally {
+      if (mounted) setState(() => _working = false);
+    }
+  }
+
+  void _message(String text) {
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
+  }
+
+  String _statusLabel() {
+    final status = _subscription?['status']?.toString() ?? '';
+    if (status == 'active') return 'ACTIVE PLAN';
+    if (status == 'demo') return 'DEMO PLAN';
+    if (status == 'expired') return 'DEMO ENDED';
+    return 'NO ACTIVE PLAN';
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(title: const Text('Plans & Subscription')),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
-          children: [
-            const _StatusCard(),
-            const SizedBox(height: 24),
-            const Text('Choose your plan', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -.5)),
-            const SizedBox(height: 5),
-            const Text('Transparent monthly plans that grow with your school.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-            const SizedBox(height: 16),
-            ...plans.map((plan) => Padding(padding: const EdgeInsets.only(bottom: 14), child: _PlanCard(plan: plan))),
-            const SizedBox(height: 6),
-            OutlinedButton.icon(
-              onPressed: () => _message(context, 'Support will contact you shortly.'),
-              icon: const Icon(Icons.support_agent_rounded),
-              label: const Text('Contact support'),
-            ),
-          ],
+        body: RefreshIndicator(
+          onRefresh: _load,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
+            children: [
+              _StatusCard(
+                loading: _loading,
+                error: _error,
+                statusLabel: _statusLabel(),
+                subscription: _subscription,
+                onStartDemo: _schoolId == null || _working ? null : _startDemo,
+                working: _working,
+              ),
+              const SizedBox(height: 24),
+              const Text('Choose your plan', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -.5)),
+              const SizedBox(height: 5),
+              const Text('Send a plan request to the school support team.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              const SizedBox(height: 16),
+              ...SubscriptionScreen.plans.map((plan) => Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: _PlanCard(plan: plan, working: _working, onChoose: () => _requestPlan(plan)),
+                  )),
+              const SizedBox(height: 6),
+              OutlinedButton.icon(
+                onPressed: () => context.go('/communication'),
+                icon: const Icon(Icons.support_agent_rounded),
+                label: const Text('Open support and messages'),
+              ),
+            ],
+          ),
         ),
       );
-
-  static void _message(BuildContext context, String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
 }
 
 class _StatusCard extends StatelessWidget {
-  const _StatusCard();
+  const _StatusCard({
+    required this.loading,
+    required this.error,
+    required this.statusLabel,
+    required this.subscription,
+    required this.onStartDemo,
+    required this.working,
+  });
+
+  final bool loading;
+  final String? error;
+  final String statusLabel;
+  final Map<String, dynamic>? subscription;
+  final VoidCallback? onStartDemo;
+  final bool working;
+
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(19),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF0D9488)]),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [BoxShadow(color: Color(0x260D9488), blurRadius: 24, offset: Offset(0, 10))],
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: Colors.white.withValues(alpha: .16), borderRadius: BorderRadius.circular(30)), child: const Text('ACTIVE DEMO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: .6))),
-            const Spacer(),
-            const Icon(Icons.verified_rounded, color: Color(0xFF99F6E4)),
-          ]),
-          const SizedBox(height: 16),
-          const Text('2-Day Free Demo', style: TextStyle(color: Colors.white, fontSize: 23, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 6),
-          Text('Explore every essential feature before choosing a plan.', style: TextStyle(color: Colors.white.withValues(alpha: .82), fontSize: 12.5)),
-          const SizedBox(height: 18),
-          ClipRRect(borderRadius: BorderRadius.circular(20), child: LinearProgressIndicator(value: .5, minHeight: 7, backgroundColor: Colors.white.withValues(alpha: .18), color: const Color(0xFF5EEAD4))),
-          const SizedBox(height: 8),
-          Text('1 day remaining', style: TextStyle(color: Colors.white.withValues(alpha: .82), fontSize: 11, fontWeight: FontWeight.w700)),
+  Widget build(BuildContext context) {
+    final end = DateTime.tryParse(subscription?['trial_ends_at']?.toString() ?? '')?.toLocal();
+    final remaining = end == null ? null : end.difference(DateTime.now()).inHours;
+    final detail = subscription?['status'] == 'active'
+        ? 'Your school subscription is active.'
+        : subscription?['status'] == 'demo' && remaining != null && remaining >= 0
+            ? 'Demo ends ${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}.'
+            : subscription == null
+                ? 'Start a two-day demo to explore the app.'
+                : 'The demo period has ended. Choose a plan to request an upgrade.';
+    return Container(
+      padding: const EdgeInsets.all(19),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF0D9488)]),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [BoxShadow(color: Color(0x260D9488), blurRadius: 24, offset: Offset(0, 10))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: .16), borderRadius: BorderRadius.circular(30)),
+            child: Text(loading ? 'LOADING' : statusLabel, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: .6)),
+          ),
+          const Spacer(),
+          const Icon(Icons.verified_rounded, color: Color(0xFF99F6E4)),
         ]),
-      );
+        const SizedBox(height: 16),
+        const Text('School plan status', style: TextStyle(color: Colors.white, fontSize: 23, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 6),
+        Text(error ?? detail, style: TextStyle(color: Colors.white.withValues(alpha: .88), fontSize: 12.5)),
+        if (subscription == null && !loading) ...[
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: onStartDemo,
+            style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF0F766E)),
+            child: working ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Start 2-day free demo'),
+          ),
+        ],
+      ]),
+    );
+  }
 }
 
 class _PlanCard extends StatelessWidget {
-  const _PlanCard({required this.plan});
+  const _PlanCard({required this.plan, required this.working, required this.onChoose});
   final _Plan plan;
+  final bool working;
+  final VoidCallback onChoose;
+
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(19),
@@ -95,18 +221,19 @@ class _PlanCard extends StatelessWidget {
           ...plan.features.map((feature) => Padding(padding: const EdgeInsets.only(bottom: 9), child: Row(children: [const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 19), const SizedBox(width: 9), Text(feature, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600))]))),
           const SizedBox(height: 8),
           SizedBox(width: double.infinity, child: FilledButton(
-            onPressed: () => SubscriptionScreen._message(context, '${plan.name} selected. We will help you complete the upgrade.'),
+            onPressed: working ? null : onChoose,
             style: FilledButton.styleFrom(backgroundColor: plan.featured ? AppColors.primary : const Color(0xFF0F172A)),
-            child: Text(plan.name.contains('Custom') || plan.price == 'Flexible' ? 'Contact for plan' : 'Upgrade plan'),
+            child: Text(plan.name.contains('Custom') || plan.price == 'Flexible' ? 'Request custom plan' : 'Request upgrade'),
           )),
         ]),
       );
 }
 
 class _Plan {
-  const _Plan(this.name, this.price, this.caption, this.features, this.icon, this.featured);
+  const _Plan(this.name, this.price, this.key, this.caption, this.features, this.icon, this.featured);
   final String name;
   final String price;
+  final String key;
   final String caption;
   final List<String> features;
   final IconData icon;
