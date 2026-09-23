@@ -206,7 +206,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         .from('student_fees')
         .select(
       'id, school_id, student_id, '
-          'fee_category_id, amount, due_date, fee_month, status',
+          'fee_category_id, amount, due_date, status',
     )
         .eq('school_id', schoolId)
         .order('due_date');
@@ -222,7 +222,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final response = await _client
         .from('fee_payments')
         .select(
-      'id, student_id, student_fee_id, fee_category_id, '
+      'id, student_id, fee_category_id, '
           'amount, payment_date, status, '
           'payment_method, receipt_number, notes',
     )
@@ -361,30 +361,29 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return null;
   }
 
-  double _feePaidForAssignment(Map<String, dynamic> fee) {
+  double _feePaidForAssignment(
+      Map<String, dynamic> fee,
+      ) {
     double paid = 0;
-    for (final payment in _payments) {
-      if (!_isPaidStatus(payment['status']?.toString().toLowerCase())) {
-        continue;
-      }
-      if ('${payment['student_fee_id']}' == '${fee['id']}') {
-        paid += _toDouble(payment['amount']);
-        continue;
-      }
 
-      // Older payment rows may not have the assignment foreign key. Keep
-      // those payments on the matching student/category/month only.
-      final feeMonth = DateTime.tryParse(fee['fee_month']?.toString() ?? '');
-      final paymentDate = DateTime.tryParse(payment['payment_date']?.toString() ?? '');
-      final sameMonth = feeMonth != null && paymentDate != null &&
-          feeMonth.year == paymentDate.year && feeMonth.month == paymentDate.month;
-      if (payment['student_fee_id'] == null && sameMonth &&
-          '${payment['student_id']}' == '${fee['student_id']}' &&
-          '${payment['fee_category_id']}' == '${fee['fee_category_id']}') {
-        paid += _toDouble(payment['amount']);
+    final studentId = fee['student_id'];
+    final categoryId = fee['fee_category_id'];
+
+    for (final payment in _payments) {
+      if (payment['student_id'].toString() ==
+          studentId.toString()) {
+        if (payment['fee_category_id'].toString() ==
+            categoryId.toString()) {
+          if (_isPaidStatus(
+            payment['status']?.toString().toLowerCase(),
+          )) {
+            paid += _toDouble(payment['amount']);
+          }
+        }
       }
     }
-    return paid.clamp(0, _toDouble(fee['amount']));
+
+    return paid;
   }
 
   double _studentTotalFee(dynamic studentId) {
