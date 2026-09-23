@@ -365,6 +365,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
       final id = int.tryParse(existing['id'].toString());
       if (id != null) selectedStudentIds = await _loadSelectedStudentIds(id);
     }
+    if (!mounted) return;
 
     bool saving = false;
     String? dialogError;
@@ -830,7 +831,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                     children: [
                       Text(widget.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
                       const SizedBox(height: 3),
-                      Text(
+                      const Text(
                         'Class/section targeting, student selection, start and due dates.',
                         style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                       ),
