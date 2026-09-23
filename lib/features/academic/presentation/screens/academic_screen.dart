@@ -170,8 +170,8 @@ class _AcademicScreenState extends State<AcademicScreen> {
 
   Future<void> _createSession() async {
     final name = TextEditingController();
-    final start = TextEditingController(text: DateTime.now().year.toString() + '-04-01');
-    final end = TextEditingController(text: (DateTime.now().year + 1).toString() + '-03-31');
+    final start = TextEditingController(text: '${DateTime.now().year}-04-01');
+    final end = TextEditingController(text: '${DateTime.now().year + 1}-03-31');
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
