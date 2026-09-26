@@ -106,8 +106,8 @@ class AppTheme {
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: Colors.white,
-        selectedColor: AppColors.primary,
-        secondarySelectedColor: AppColors.primary,
+        selectedColor: AppColors.primaryLight,
+        secondarySelectedColor: AppColors.primaryLight,
         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: const BorderSide(color: AppColors.border),
