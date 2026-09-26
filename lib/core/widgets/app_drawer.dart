@@ -24,7 +24,7 @@ class AppDrawer extends ConsumerWidget {
 
     return Drawer(
       width: 292,
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: AppColors.primaryLight,
       child: SafeArea(
         child: Column(
           children: [
@@ -225,7 +225,7 @@ class AppDrawer extends ConsumerWidget {
                   const SizedBox(height: 8),
 
                   Divider(
-                    color: Colors.white.withValues(alpha: .08),
+                    color: AppColors.border,
                     height: 1,
                   ),
 
@@ -299,7 +299,7 @@ class AppDrawer extends ConsumerWidget {
                   size: 20,
                   color: active
                       ? Colors.white
-                      : Colors.white60,
+                      : AppColors.textSecondary,
                 ),
 
                 const SizedBox(width: 12),
@@ -312,7 +312,7 @@ class AppDrawer extends ConsumerWidget {
                     style: TextStyle(
                       color: active
                           ? Colors.white
-                          : Colors.white70,
+                          : AppColors.textPrimary,
                       fontSize: 12.5,
                       fontWeight: active
                           ? FontWeight.w700
@@ -508,7 +508,7 @@ class _Header extends StatelessWidget {
             onPressed: onClose,
             icon: const Icon(
               Icons.close_rounded,
-              color: Colors.white54,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -525,7 +525,7 @@ class _Header extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.w800,
           ),
@@ -534,7 +534,7 @@ class _Header extends StatelessWidget {
         const Text(
           'School Management',
           style: TextStyle(
-            color: Colors.white54,
+            color: AppColors.textSecondary,
             fontSize: 10,
           ),
         ),
@@ -564,10 +564,10 @@ class _UserCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .06),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withValues(alpha: .06),
+          color: AppColors.surface,
         ),
       ),
       child: Row(
@@ -595,7 +595,7 @@ class _UserCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -607,7 +607,7 @@ class _UserCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white54,
+                    color: AppColors.textSecondary,
                     fontSize: 10,
                   ),
                 ),
@@ -617,7 +617,7 @@ class _UserCard extends StatelessWidget {
 
           const Icon(
             Icons.verified_rounded,
-            color: Color(0xFF34D399),
+            color: Color(0xFF047857),
             size: 16,
           ),
         ],
@@ -713,14 +713,14 @@ class _BottomActions extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.logout_rounded,
-                    color: Colors.redAccent,
+                    color: Color(0xFFB91C1C),
                     size: 18,
                   ),
                   SizedBox(width: 7),
                   Text(
                     'Logout',
                     style: TextStyle(
-                      color: Colors.redAccent,
+                      color: Color(0xFFB91C1C),
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
@@ -760,24 +760,24 @@ class _Action extends StatelessWidget {
           vertical: 10,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .05),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.white.withValues(alpha: .04),
+            color: AppColors.border,
           ),
         ),
         child: Column(
           children: [
             Icon(
               icon,
-              color: Colors.white60,
+              color: AppColors.textSecondary,
               size: 18,
             ),
             const SizedBox(height: 4),
             Text(
               title,
               style: const TextStyle(
-                color: Colors.white60,
+                color: AppColors.textSecondary,
                 fontSize: 9,
               ),
             ),
