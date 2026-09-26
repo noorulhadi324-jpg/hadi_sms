@@ -833,7 +833,7 @@ class _SchoolWorkScreenState extends State<SchoolWorkScreen> {
                       const SizedBox(height: 3),
                       const Text(
                         'Class/section targeting, student selection, start and due dates.',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                       ),
                     ],
                   ),
