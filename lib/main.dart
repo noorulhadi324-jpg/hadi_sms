@@ -40,7 +40,7 @@ class HadiSmsApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         home: Scaffold(
           body: Center(
             child: Padding(
