@@ -206,7 +206,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         .from('student_fees')
         .select(
       'id, school_id, student_id, '
-          'fee_category_id, amount, due_date, status',
+          'fee_category_id, amount, due_date, status, fee_month',
     )
         .eq('school_id', schoolId)
         .order('due_date');
@@ -222,7 +222,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final response = await _client
         .from('fee_payments')
         .select(
-      'id, student_id, fee_category_id, '
+      'id, student_id, student_fee_id, fee_category_id, '
           'amount, payment_date, status, '
           'payment_method, receipt_number, notes',
     )
