@@ -10,7 +10,7 @@ class AppColors {
   static const Color accent = Color(0xFF8B5CF6); // Violet accent
   
   // Neutral palette
-  static const Color background = Color(0xFFF8FAFC);
+  static const Color background = Color(0xFFF1F5F9);
   static const Color surface = Colors.white;
   static const Color border = Color(0xFFE2E8F0);
   static const Color divider = Color(0xFFF1F5F9);
@@ -23,8 +23,8 @@ class AppColors {
 
   // Text colors
   static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color textSecondary = Color(0xFF475569);
+  static const Color textMuted = Color(0xFF64748B);
 
   // Decorative / Chart colors
   static const List<Color> chartPalette = [
