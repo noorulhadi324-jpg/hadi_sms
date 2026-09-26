@@ -69,7 +69,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     setState(() => _working = true);
     try {
       await _client.rpc('request_subscription_plan', params: {'p_plan_key': plan.key});
-      _message('Your ${plan.name} request has been sent to the school support team.');
+      _message('Your ${plan.name} request has been saved. Activation requires approval.');
     } catch (error) {
       _message('Could not send request: $error');
     } finally {
@@ -84,10 +84,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String _statusLabel() {
     final status = _subscription?['status']?.toString() ?? '';
     if (status == 'active') return 'ACTIVE PLAN';
-    if (status == 'demo') return 'DEMO PLAN';
     if (status == 'expired') return 'DEMO ENDED';
     final trialEnd = DateTime.tryParse(_subscription?['trial_ends_at']?.toString() ?? '');
     if (status == 'demo' && trialEnd != null && !trialEnd.isAfter(DateTime.now())) return 'DEMO ENDED';
+    if (status == 'demo') return 'DEMO PLAN';
+    if (status == 'cancelled') return 'PLAN CANCELLED';
     return 'NO ACTIVE PLAN';
   }
 
@@ -112,7 +113,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               const SizedBox(height: 24),
               const Text('Choose your plan', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -.5)),
               const SizedBox(height: 5),
-              const Text('Send a plan request to the school support team.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              const Text('Request a plan. Payment and activation are arranged separately.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
               const SizedBox(height: 16),
               ...SubscriptionScreen.plans.map((plan) => Padding(
                     padding: const EdgeInsets.only(bottom: 14),
