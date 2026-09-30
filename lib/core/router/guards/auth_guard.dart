@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/auth_state_notifier.dart';
 import '../../network/supabase_client.dart';
@@ -136,7 +137,9 @@ class AuthGuard {
       }
 
       return profile['role']?.toString().trim().toLowerCase();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('AuthGuard profile lookup failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
       return null;
     }
   }
