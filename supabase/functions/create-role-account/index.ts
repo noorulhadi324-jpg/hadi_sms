@@ -63,19 +63,6 @@ Deno.serve(async (req) => {
     if (schoolId == null) {
       return json({ success: false, error: "Your principal account is not linked to a school." }, 403);
     }
-    /*
-    const { data: ownedSchool } = await admin
-        .from("schools")
-        .select("id")
-        .eq("created_by", authData.user.id)
-        .order("id", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (ownedSchool?.id != null) {
-        await admin.from("profiles").update({ school_id: ownedSchool.id }).eq("id", authData.user.id);
-      }
-    }
-    */
 
 
     const body = await req.json();
