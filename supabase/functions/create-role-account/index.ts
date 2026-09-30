@@ -55,13 +55,16 @@ Deno.serve(async (req) => {
     if (!caller || caller.is_active === false) return json({ success: false, error: "Your account is inactive or profile is missing." }, 403);
 
     const callerRole = String(caller.role ?? "").toLowerCase();
-    if (!['principal', 'staff'].includes(callerRole)) {
-      return json({ success: false, error: "Only school administration can create staff, teacher or parent accounts." }, 403);
+    if (callerRole !== "principal") {
+      return json({ success: false, error: "Only an active principal can create teacher or parent accounts." }, 403);
     }
 
-    let schoolId = caller.school_id;
+    const schoolId = caller.school_id;
     if (schoolId == null) {
-      const { data: ownedSchool } = await admin
+      return json({ success: false, error: "Your principal account is not linked to a school." }, 403);
+    }
+    /*
+    const { data: ownedSchool } = await admin
         .from("schools")
         .select("id")
         .eq("created_by", authData.user.id)
@@ -69,11 +72,11 @@ Deno.serve(async (req) => {
         .limit(1)
         .maybeSingle();
       if (ownedSchool?.id != null) {
-        schoolId = ownedSchool.id;
-        await admin.from("profiles").update({ school_id: schoolId }).eq("id", authData.user.id);
+        await admin.from("profiles").update({ school_id: ownedSchool.id }).eq("id", authData.user.id);
       }
     }
-    if (schoolId == null) return json({ success: false, error: "Your account is not linked to a school." }, 403);
+    */
+
 
     const body = await req.json();
     const role = String(body?.role ?? "").trim().toLowerCase();
