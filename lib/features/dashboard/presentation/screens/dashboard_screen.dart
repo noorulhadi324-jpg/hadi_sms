@@ -638,7 +638,7 @@ class _WelcomeBanner
               Alignment.bottomRight,
           colors: [
             AppColors.primary,
-            Color(0xFF7C5CFF),
+            AppColors.accent,
           ],
         ),
 
@@ -2167,7 +2167,7 @@ class _DashboardError
           decoration:
               BoxDecoration(
             color:
-                Colors.white,
+                AppColors.surface,
             borderRadius:
                 BorderRadius.circular(18),
             border:
