@@ -638,7 +638,7 @@ class _WelcomeBanner
               Alignment.bottomRight,
           colors: [
             AppColors.primary,
-            Color(0xFF7C5CFF),
+            AppColors.accent,
           ],
         ),
 
@@ -684,8 +684,8 @@ class _WelcomeBanner
                   style: TextStyle(
                     color: Colors.white
                         .withValues(alpha: .82),
-                    fontSize: 11.5,
-                    height: 1.35,
+                    fontSize: 13,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -754,7 +754,7 @@ class _SectionTitle
           style: const TextStyle(
             color:
                 AppColors.textSecondary,
-            fontSize: 10.5,
+            fontSize: 12,
           ),
         ),
       ],
@@ -806,9 +806,11 @@ class _StatsGrid
     return LayoutBuilder(
       builder: (_, constraints) {
         final columns =
-            constraints.maxWidth >= 850
+            constraints.maxWidth >= 1100
                 ? 4
-                : 2;
+                : constraints.maxWidth >= 650
+                    ? 4
+                    : 2;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -827,7 +829,7 @@ class _StatsGrid
             mainAxisSpacing:
                 10,
             mainAxisExtent:
-                108,
+                constraints.maxWidth < 420 ? 118 : 112,
           ),
 
           itemBuilder: (_, index) {
@@ -938,7 +940,7 @@ class _StatCard
                 style: const TextStyle(
                   color:
                       AppColors.textSecondary,
-                  fontSize: 9.5,
+                  fontSize: 12,
                   fontWeight:
                       FontWeight.w700,
                 ),
@@ -1487,7 +1489,7 @@ class _QuickActionCard
                       TextOverflow.ellipsis,
                   style:
                       const TextStyle(
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight:
                         FontWeight.w900,
                   ),
@@ -1661,7 +1663,7 @@ class _MiniInfo
                 const TextStyle(
               color:
                   AppColors.textSecondary,
-              fontSize: 8.5,
+              fontSize: 10.5,
             ),
           ),
         ],
@@ -1935,7 +1937,7 @@ class _RecentActivity
                                         .ellipsis,
                                 style:
                                     const TextStyle(
-                                  fontSize: 11.5,
+                                  fontSize: 13,
                                   fontWeight:
                                       FontWeight.w800,
                                 ),
@@ -1961,7 +1963,7 @@ class _RecentActivity
                                       color:
                                           AppColors
                                               .textSecondary,
-                                      fontSize: 9,
+                                      fontSize: 11,
                                     ),
                                   ),
                                 ),
@@ -1982,7 +1984,7 @@ class _RecentActivity
                             color:
                                 AppColors
                                     .textSecondary,
-                            fontSize: 8.5,
+                            fontSize: 10,
                             fontWeight:
                                 FontWeight.w700,
                           ),
@@ -2165,7 +2167,7 @@ class _DashboardError
           decoration:
               BoxDecoration(
             color:
-                Colors.white,
+                AppColors.surface,
             borderRadius:
                 BorderRadius.circular(18),
             border:
