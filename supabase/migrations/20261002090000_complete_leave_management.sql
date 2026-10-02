@@ -32,7 +32,7 @@ drop policy if exists "leave_delete_own_pending" on public.leave_requests;
 create policy "leave_delete_own_pending" on public.leave_requests for delete to authenticated using (school_id = (select p.school_id from public.profiles p where p.id = auth.uid()) and user_id = auth.uid() and status = 'pending');
 drop policy if exists "leave_delete_principal_staff" on public.leave_requests;
 create policy "leave_delete_principal_staff" on public.leave_requests for delete to authenticated using (school_id = (select p.school_id from public.profiles p where p.id = auth.uid()) and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role in ('principal','staff')));
-create or replace function public.set_leave_requests_updated_at() returns trigger language plpgsql security invoker as $$ begin new.updated_at = now(); return new; end; $$;
+create or replace function public.set_leave_requests_updated_at() returns trigger language plpgsql security invoker set search_path = public as $ begin new.updated_at = now(); return new; end; $$;
 drop trigger if exists trg_leave_requests_updated_at on public.leave_requests;
 create trigger trg_leave_requests_updated_at before update on public.leave_requests for each row execute function public.set_leave_requests_updated_at();
 revoke all on function public.set_leave_requests_updated_at() from public;
