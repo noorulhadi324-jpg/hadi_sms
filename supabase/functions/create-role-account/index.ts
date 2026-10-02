@@ -122,12 +122,14 @@ Deno.serve(async (req) => {
         full_name: fullName,
         phone: phone || null,
         gender,
-        role,
-        school_id: String(schoolId),
         subject: subject || null,
         assigned_class: assignedClass || null,
         assigned_section: assignedSection || null,
         cnic: cnic || null,
+      },
+      app_metadata: {
+        role,
+        school_id: String(schoolId),
       },
     });
 
