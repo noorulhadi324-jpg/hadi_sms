@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -43,7 +44,9 @@ class _SessionRouterScreenState extends State<SessionRouterScreen> {
       } else {
         context.go('/dashboard');
       }
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Session routing failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
       await client.auth.signOut();
       if (mounted) context.go('/login');
     }

@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
     if (callerError) throw new Error(callerError.message);
 
     const callerRole = String(caller?.role ?? "").toLowerCase();
-    if (!caller || caller.is_active === false || !["principal", "staff"].includes(callerRole)) {
-      return json({ success: false, error: "Only school administration can create staff accounts." }, 403);
+    if (!caller || caller.is_active === false || callerRole !== "principal") {
+      return json({ success: false, error: "Only an active principal can create staff accounts." }, 403);
     }
     if (caller.school_id == null) return json({ success: false, error: "Your account is not linked to a school." }, 403);
 

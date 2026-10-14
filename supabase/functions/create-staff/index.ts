@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     const { data: currentProfile, error: profileError } = await admin
       .from("profiles")
-      .select("school_id, role")
+      .select("school_id, role, is_active")
       .eq("id", currentUser.id)
       .maybeSingle();
 
@@ -56,31 +56,20 @@ Deno.serve(async (req) => {
       return response({ success: false, error: "Your profile was not found." }, 403);
     }
 
-    let schoolId = currentProfile.school_id;
-
-    if (schoolId == null) {
-      const { data: ownedSchool, error: schoolError } = await admin
-        .from("schools")
-        .select("id")
-        .eq("created_by", currentUser.id)
-        .order("id", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (schoolError) throw new Error(schoolError.message);
-
-      if (ownedSchool?.id != null) {
-        schoolId = ownedSchool.id;
-        const { error: linkError } = await admin
-          .from("profiles")
-          .update({ school_id: schoolId, role: "principal", is_active: true })
-          .eq("id", currentUser.id);
-        if (linkError) throw new Error(linkError.message);
-      }
+    if (currentProfile.role !== "principal" || currentProfile.is_active === false) {
+      return response({
+        success: false,
+        error: "Only an active principal can create staff accounts.",
+      }, 403);
     }
 
+    const schoolId = currentProfile.school_id;
+
     if (schoolId == null) {
-      return response({ success: false, error: "Your account is not linked to a school." }, 403);
+      return response({
+        success: false,
+        error: "Your principal account is not linked to a school.",
+      }, 403);
     }
 
     const body = await req.json();

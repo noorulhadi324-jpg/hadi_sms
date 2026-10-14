@@ -45,7 +45,10 @@ Deno.serve(async (req) => {
     if (target.school_id !== caller.school_id) return json({success:false,error:"This user belongs to another school."},403);
     const targetRole = String(target.role ?? "").toLowerCase();
     if (!["teacher","parent","staff"].includes(targetRole)) return json({success:false,error:"This account cannot be managed here."},403);
-    if (target.id === caller.id) return json({success:false,error:"You cannot delete your own account here."},400);
+    if (target.id === caller.id) return json({success:false,error:"You cannot manage your own account here."},400);
+    if (callerRole !== "principal" && targetRole === "staff") {
+      return json({success:false,error:"Only the principal can manage staff accounts."},403);
+    }
 
     if (action === "delete") {
       const {error: deleteError} = await admin.auth.admin.deleteUser(targetId);
