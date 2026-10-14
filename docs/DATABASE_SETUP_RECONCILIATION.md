@@ -61,3 +61,10 @@ A live query found two pending `student_fees` rows for the same school, student,
 ## Other remaining manual action
 
 Enable leaked-password protection in Supabase Auth settings. The security advisor currently reports this as a warning. It has not been enabled by this repository change.
+
+
+## Recent RLS policy cleanup (2026-10-14)
+
+The live project migration `reduce_duplicate_permissive_policies` was applied and its SQL is tracked as `supabase/migrations/20261014080409_reduce_duplicate_permissive_policies.sql`. It replaces write-only `ALL` policies on accounting entries and school challans with separate INSERT/UPDATE/DELETE policies, preserving the existing school and active principal/staff checks. It also removes one duplicate school-notification SELECT policy whose predicate was identical to the remaining policy.
+
+After the change, the Supabase performance advisor's multiple-permissive-policy warning count fell from six to two. The two remaining warnings are for leave-request UPDATE/DELETE, where the policies represent different owner-versus-principal/staff capabilities and should not be merged without proving equivalence. The advisor still reports unused-index informational findings; indexes are not being removed solely on that basis.
